@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "name": "WP Manager Pro",
-  "theme": "linden",
+  "theme": "mint",
   "colors": {
-    "primary": "#94cb04",
+    "primary": "#2363EB",
     "light": "#545454",
-    "dark": "#94cb04"
+    "dark": "#2363EB"
   },
   "favicon": "/favicon.svg",
   "logo": {
@@ -168,5 +168,9 @@
         ]
       }
     ]
+  },
+  "description": " Agency-ready WordPress management suite — plugin manager, theme manager, file manager, database tools, user manager, maintenance mode, debug tools, image optimizer, and notes. Built with React 19 + TypeScript + PHP REST API.",
+  "seo": {
+    "indexing": "all"
   }
 }
