@@ -1,0 +1,70 @@
+---
+title: "Reset tools"
+description: "Selectively delete posts, pages, comments, media, and non-admin users from a development site — with live count previews and double confirmation."
+---
+
+**Reset Tools** is a content deletion utility for development and testing environments. It lets you bulk-delete selected content types while preserving plugin settings, administrator accounts, and site configuration.
+
+<Warning>
+  **Reset Tools is for development environments only.** All deletions are permanent and cannot be undone. Back up your database before proceeding.
+</Warning>
+
+## Content types
+
+Five content types can be reset independently:
+
+| Type | What is deleted |
+|------|-----------------|
+| **Posts** | All posts and their post meta |
+| **Pages** | All pages and their post meta |
+| **Comments** | All comments and comment meta |
+| **Media** | All media attachments and their physical files from disk |
+| **Non-Admin Users** | All users except those with the Administrator role |
+
+## Live count preview
+
+When the Reset Tools page loads, it fetches the current count for each content type from the WordPress database. The count is shown as a badge next to each content type label, so you can see exactly how many items will be deleted before selecting anything.
+
+## Resetting content
+
+<Steps>
+  <Step title="Select content types">
+    Check the boxes next to each content type you want to delete. Selected cards are highlighted with a red border. Each card shows the item count that will be deleted.
+  </Step>
+  <Step title="Tick the confirmation checkbox">
+    Check the **I understand this is irreversible** checkbox. This confirms you want to permanently delete the selected content.
+  </Step>
+  <Step title="Click Execute Reset">
+    Click **Execute Reset**. The button shows how many types are selected, e.g. **Execute Reset (2 selected)**.
+  </Step>
+  <Step title="Confirm in the dialog">
+    A second confirmation dialog lists each selected content type and its item count, and states that the deletion cannot be undone. Click **Yes, Delete Everything** to proceed.
+  </Step>
+  <Step title="Review the result">
+    A success toast confirms the operation with a summary, e.g. `Reset complete: deleted 45 posts, 12 pages`. The count badges on each card update to reflect the new totals.
+  </Step>
+</Steps>
+
+## What is preserved
+
+Reset Tools only deletes the content you explicitly select. The following are never affected:
+
+- Plugin settings and configuration stored in `wp_options`
+- Administrator user accounts
+- Active theme settings and customizer data
+- Database tables created by other plugins
+- The WordPress installation itself
+
+## How deletions work
+
+All deletions use WordPress core functions:
+
+- Posts, pages, and media: `wp_delete_post()` with `force_delete = true`
+- Comments: `wp_delete_comment()`
+- Users: `wp_delete_user()`
+
+Using core functions ensures that associated data (post meta, comment meta, user meta, uploaded files) is cleaned up correctly.
+
+<Note>
+  Because Reset Tools uses core WordPress deletion functions rather than raw SQL, the operation is slower than a direct `TRUNCATE TABLE` but leaves the database in a consistent state.
+</Note>

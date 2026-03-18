@@ -1,0 +1,282 @@
+---
+title: "Agency API"
+description: "Mail interceptor, white-label login page, admin UI customiser, client report generator, and coming soon mode."
+---
+
+<Note>
+  Agency API endpoints were added in **v2.8.0**.
+</Note>
+
+**Base path:** `/wp-json/wp-manager-pro/v1/agency`
+
+All endpoints require `X-WP-Nonce` header with a `wp_rest` nonce and the `manage_options` capability.
+
+---
+
+## GET /agency/mail-settings
+
+Returns the mail interceptor configuration (whether Dev Mode is enabled).
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/agency/mail-settings \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="dev_mode" type="boolean">Whether Dev Mode is active (intercepting all outgoing emails).</ResponseField>
+<ResponseField name="log" type="array">
+  Array of captured email log entries.
+  <Expandable title="Log entry">
+    <ResponseField name="id" type="integer">Log entry ID.</ResponseField>
+    <ResponseField name="to" type="string">Recipient email address.</ResponseField>
+    <ResponseField name="subject" type="string">Email subject.</ResponseField>
+    <ResponseField name="body" type="string">Email body (HTML or plain text).</ResponseField>
+    <ResponseField name="date" type="string">ISO 8601 timestamp.</ResponseField>
+    <ResponseField name="status" type="string">`Intercepted` or `Sent`.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## GET /agency/mail-log
+
+Returns paginated mail interceptor log entries.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/agency/mail-log \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+Returns an array of log entry objects (same structure as the `log` field above).
+
+---
+
+## DELETE /agency/mail-log/clear
+
+Clears all mail interceptor log entries.
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/agency/mail-log/clear \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## POST /agency/mail-resend
+
+Resends a logged email immediately, regardless of Dev Mode state.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/agency/mail-resend \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"id": 5}'
+```
+
+### Parameters
+
+<ParamField body="id" type="integer" required>
+  ID of the mail log entry to resend.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /agency/login-page
+
+Returns the current white-label login page configuration.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/agency/login-page \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="enabled" type="boolean">Whether the custom login page is active.</ResponseField>
+<ResponseField name="logo_url" type="string">URL of the custom logo image.</ResponseField>
+<ResponseField name="bg_color" type="string">Hex background color.</ResponseField>
+<ResponseField name="bg_image" type="string">URL of the background image.</ResponseField>
+<ResponseField name="button_color" type="string">Hex color for the login button.</ResponseField>
+<ResponseField name="heading_text" type="string">Custom heading shown above the login form.</ResponseField>
+<ResponseField name="footer_text" type="string">Custom footer text.</ResponseField>
+<ResponseField name="privacy_url" type="string">URL for the Privacy policy link.</ResponseField>
+<ResponseField name="terms_url" type="string">URL for the Terms of service link.</ResponseField>
+
+---
+
+## POST /agency/login-page
+
+Saves white-label login page settings. Pass only the fields you want to update.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/agency/login-page \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true, "heading_text": "Client Portal", "button_color": "#94cb04"}'
+```
+
+### Parameters
+
+<ParamField body="enabled" type="boolean">Whether to activate the custom login page.</ParamField>
+<ParamField body="logo_url" type="string">Logo image URL.</ParamField>
+<ParamField body="bg_color" type="string">Hex background color.</ParamField>
+<ParamField body="bg_image" type="string">Background image URL.</ParamField>
+<ParamField body="button_color" type="string">Hex color for the login button.</ParamField>
+<ParamField body="heading_text" type="string">Heading text above the form.</ParamField>
+<ParamField body="footer_text" type="string">Footer text below the form.</ParamField>
+<ParamField body="privacy_url" type="string">Privacy policy link URL.</ParamField>
+<ParamField body="terms_url" type="string">Terms of service link URL.</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /agency/admin-customiser
+
+Returns the current admin menu and dashboard widget visibility settings.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/agency/admin-customiser \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="hidden_menus" type="array">Array of admin menu slugs hidden for non-administrator roles.</ResponseField>
+<ResponseField name="hidden_widgets" type="array">Array of dashboard widget IDs hidden for non-administrator roles.</ResponseField>
+<ResponseField name="available_menus" type="array">All available admin menu items as `{slug, title}` objects.</ResponseField>
+<ResponseField name="available_widgets" type="array">All available dashboard widgets as `{id, title}` objects.</ResponseField>
+
+---
+
+## POST /agency/admin-customiser
+
+Saves admin UI customisation settings.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/agency/admin-customiser \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"hidden_menus": ["edit.php?post_type=page", "tools.php"], "hidden_widgets": ["dashboard_recent_comments"]}'
+```
+
+### Parameters
+
+<ParamField body="hidden_menus" type="array">Array of admin menu slugs to hide from non-administrator roles.</ParamField>
+<ParamField body="hidden_widgets" type="array">Array of dashboard widget IDs to hide from non-administrator roles.</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /agency/report
+
+Generates and returns the full client health report data.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/agency/report \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="health_score" type="integer">0–100 health score.</ResponseField>
+<ResponseField name="site_name" type="string">WordPress site name.</ResponseField>
+<ResponseField name="site_url" type="string">Site home URL.</ResponseField>
+<ResponseField name="generated_at" type="string">ISO 8601 generation timestamp.</ResponseField>
+<ResponseField name="wp_version" type="string">WordPress version.</ResponseField>
+<ResponseField name="php_version" type="string">PHP version.</ResponseField>
+<ResponseField name="db_size" type="string">Total database size (human-readable).</ResponseField>
+<ResponseField name="ssl" type="boolean">Whether the site is served over HTTPS.</ResponseField>
+<ResponseField name="wp_debug" type="boolean">Whether `WP_DEBUG` is enabled.</ResponseField>
+<ResponseField name="pending_updates" type="integer">Number of pending plugin/theme/core updates.</ResponseField>
+<ResponseField name="last_backup" type="string|null">Date of the most recent WP Manager Pro backup, or `null`.</ResponseField>
+<ResponseField name="active_plugins" type="array">Array of active plugin objects with `name`, `version`, `author`, and `update_available`.</ResponseField>
+<ResponseField name="active_theme" type="object">Active theme details: `name`, `version`, `author`, `update_available`.</ResponseField>
+
+---
+
+## GET /agency/coming-soon
+
+Returns the coming soon page configuration.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/agency/coming-soon \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="active" type="boolean">Whether coming soon mode is active.</ResponseField>
+<ResponseField name="heading" type="string">Main heading text.</ResponseField>
+<ResponseField name="message" type="string">Supporting message text.</ResponseField>
+<ResponseField name="launch_date" type="string">ISO 8601 launch date for the countdown timer.</ResponseField>
+<ResponseField name="logo_url" type="string">Logo image URL.</ResponseField>
+<ResponseField name="bg_image" type="string">Background image URL.</ResponseField>
+<ResponseField name="bg_color" type="string">Hex background color.</ResponseField>
+<ResponseField name="accent_color" type="string">Hex accent color for countdown tiles.</ResponseField>
+<ResponseField name="email_capture" type="boolean">Whether the email capture form is active.</ResponseField>
+<ResponseField name="captured_emails" type="array">Array of captured subscriber email addresses.</ResponseField>
+
+---
+
+## POST /agency/coming-soon
+
+Saves coming soon page settings. Also updates the `active` state.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/agency/coming-soon \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"active": true, "heading": "Coming Soon", "accent_color": "#94cb04", "email_capture": true}'
+```
+
+### Parameters
+
+<ParamField body="active" type="boolean">Whether to enable coming soon mode.</ParamField>
+<ParamField body="heading" type="string">Main heading text.</ParamField>
+<ParamField body="message" type="string">Supporting message.</ParamField>
+<ParamField body="launch_date" type="string">ISO 8601 launch date.</ParamField>
+<ParamField body="logo_url" type="string">Logo image URL.</ParamField>
+<ParamField body="bg_image" type="string">Background image URL.</ParamField>
+<ParamField body="bg_color" type="string">Hex background color.</ParamField>
+<ParamField body="accent_color" type="string">Hex accent color.</ParamField>
+<ParamField body="email_capture" type="boolean">Enable/disable email capture form.</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## DELETE /agency/coming-soon/emails/clear
+
+Clears all captured coming soon subscriber email addresses.
+
+<Warning>
+  This action permanently deletes all captured email addresses. Export them first if needed.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/agency/coming-soon/emails/clear \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>

@@ -1,0 +1,163 @@
+---
+title: "Scanner API"
+description: "Inspect flagged files from the malware scanner, delete or quarantine suspicious files, and manage the scanner ignore list."
+---
+
+<Note>All scanner file-action endpoints are available since v2.9.3.</Note>
+
+## GET /scanner/file
+
+Returns the content of a flagged file centred around the suspicious line, providing ±40 lines of context for review.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/scanner/file?path=plugins%2Fmy-plugin%2Fbad.php&line=42" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="path" type="string" required>
+  The file path relative to `wp-content/`. Path traversal outside `wp-content/` is blocked.
+</ParamField>
+
+<ParamField path="line" type="integer">
+  The flagged line number. The response will be centred around this line. Pass `0` or omit to return all lines.
+</ParamField>
+
+### Response
+
+<ResponseField name="path" type="string">The relative path that was read.</ResponseField>
+<ResponseField name="total_lines" type="integer">Total number of lines in the file.</ResponseField>
+<ResponseField name="flag_line" type="integer">The flagged line number provided in the request.</ResponseField>
+<ResponseField name="lines" type="array">
+  <Expandable title="line properties">
+    <ResponseField name="n" type="integer">Line number (1-indexed).</ResponseField>
+    <ResponseField name="text" type="string">Line content.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## DELETE /scanner/file
+
+Permanently deletes a flagged file from disk.
+
+<Warning>
+  Deleting a file is permanent and cannot be undone. Consider using `POST /scanner/quarantine` to move the file to a safe location first so you can inspect it before committing to deletion.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/scanner/file \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"path": "plugins/my-plugin/bad.php", "confirm": true}'
+```
+
+### Parameters
+
+<ParamField path="path" type="string" required>
+  The file path relative to `wp-content/`.
+</ParamField>
+
+<ParamField path="confirm" type="boolean" required>
+  Must be `true`. This prevents accidental deletions.
+</ParamField>
+
+### Response
+
+<ResponseField name="deleted" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="path" type="string">The relative path of the deleted file.</ResponseField>
+
+---
+
+## POST /scanner/quarantine
+
+Moves a flagged file to `wp-content/wmp-quarantine/` and appends a `.quarantined` extension so it cannot be executed. A `.htaccess` file is written to the quarantine directory to block direct HTTP access.
+
+<Note>
+  Quarantined files remain on disk in a protected directory. You can inspect them manually before deciding to delete them permanently.
+</Note>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/scanner/quarantine \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"path": "plugins/my-plugin/bad.php", "confirm": true}'
+```
+
+### Parameters
+
+<ParamField path="path" type="string" required>
+  The file path relative to `wp-content/`.
+</ParamField>
+
+<ParamField path="confirm" type="boolean" required>
+  Must be `true`.
+</ParamField>
+
+### Response
+
+<ResponseField name="quarantined" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="dest" type="string">The destination path of the quarantined file relative to `wp-content/` (e.g. `wmp-quarantine/plugins/my-plugin/bad.php.quarantined`).</ResponseField>
+
+---
+
+## POST /scanner/ignore
+
+Adds a file to the scanner ignore list. Ignored files are skipped on future scans.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/scanner/ignore \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"path": "plugins/my-plugin/known-safe.php"}'
+```
+
+### Parameters
+
+<ParamField path="path" type="string" required>
+  The file path relative to `wp-content/` to ignore.
+</ParamField>
+
+### Response
+
+<ResponseField name="ignored" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="path" type="string">The path that was added to the ignore list.</ResponseField>
+
+---
+
+## GET /scanner/ignored
+
+Returns all file paths currently on the scanner ignore list.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/scanner/ignored \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+Returns an array of relative file path strings (relative to `wp-content/`).
+
+---
+
+## DELETE /scanner/ignored
+
+Removes a file from the scanner ignore list. The file will be included in future scans.
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/scanner/ignored \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"path": "plugins/my-plugin/known-safe.php"}'
+```
+
+### Parameters
+
+<ParamField path="path" type="string" required>
+  The file path to remove from the ignore list.
+</ParamField>
+
+### Response
+
+<ResponseField name="removed" type="boolean">Always `true` on success.</ResponseField>

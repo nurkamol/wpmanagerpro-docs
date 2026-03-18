@@ -1,0 +1,96 @@
+---
+title: "Client reports"
+description: "Generate a one-click HTML site health report for your clients, and show a branded coming soon page to visitors before launch."
+---
+
+The **Client Report** tab and **Coming Soon** tab within [Agency Tools](/features/agency-tools) provide the two main client-facing tools: a downloadable site health report and a pre-launch landing page.
+
+## Client report generator
+
+The **Client Report Generator** produces a standalone HTML file summarising the site's health and configuration. It requires no external service and can be generated in one click.
+
+### What the report includes
+
+| Section | Details |
+|---------|---------|
+| **Health score** | A 0–100 score computed from all health checks, shown as a ring chart |
+| **Site name and URL** | The WordPress site name and home URL |
+| **Generation date** | Timestamp of when the report was generated |
+| **WordPress version** | The installed WP version |
+| **PHP version** | The server PHP version |
+| **Database size** | Total database size in MB |
+| **SSL status** | Whether the site is served over HTTPS |
+| **WP_DEBUG flag** | Whether debug mode is currently on or off |
+| **Pending updates** | Number of plugin/theme/core updates available |
+| **Last backup date** | The date of the most recent WP Manager Pro backup |
+| **Active plugins** | Full list with name, version, author, and update-available indicator |
+| **Active theme** | Theme name, version, author, and update-available indicator |
+
+### Generating a client report
+
+<Steps>
+  <Step title="Open Agency Tools">
+    Navigate to **Agency Tools** in the WP Manager Pro sidebar.
+  </Step>
+  <Step title="Go to the Client Report tab">
+    Click the **Client Report** tab.
+  </Step>
+  <Step title="Generate the report">
+    Click **Generate Report**. The report data is fetched from the WordPress REST API and rendered inline on the page.
+  </Step>
+  <Step title="Download or copy the HTML">
+    Once the report is displayed:
+    - Click **Download Report** to save it as an `.html` file named after the site (e.g. `site-report-my-site.html`).
+    - Click **Copy HTML** to copy the full report HTML to your clipboard.
+  </Step>
+</Steps>
+
+<Tip>
+  Send the downloaded HTML file directly to your client as an email attachment. It is self-contained and requires no internet connection to view.
+</Tip>
+
+## Coming soon mode
+
+**Coming Soon Mode** displays a branded pre-launch page to all visitors while you build the site. Logged-in administrators see the live site normally. The coming soon page returns a `200 OK` status code.
+
+### Enabling coming soon mode
+
+<Steps>
+  <Step title="Open the Coming Soon tab">
+    In **Agency Tools**, click the **Coming Soon** tab.
+  </Step>
+  <Step title="Enable the mode">
+    Flip the **Active** toggle to on. The status indicator changes to **Active**.
+  </Step>
+  <Step title="Configure the page content">
+    Set the following fields under **Page Content**:
+
+    - **Heading** — the main headline shown to visitors (e.g. `Coming Soon`).
+    - **Message** — a supporting paragraph below the headline.
+    - **Launch Date & Time** — set this to show a countdown timer with glass-card tiles for days, hours, minutes, and seconds. Leave empty to hide the timer.
+  </Step>
+  <Step title="Set branding">
+    Under **Logo & Background**:
+    - **Logo image** — paste a URL or click **Media** to pick from the Media Library.
+    - **Background image** — overrides the background colour when set.
+
+    Under **Colours**:
+    - **Background colour** — page background (default `#0f172a`).
+    - **Accent colour** — used for countdown tile borders and highlight elements (default `#6366f1`).
+  </Step>
+  <Step title="Optionally enable email capture">
+    Toggle **Enable email capture form** under **Email Capture**. A “Notify Me” subscription input appears on the coming soon page. Submitted email addresses are stored and displayed in the captured emails list.
+  </Step>
+  <Step title="Save">
+    Click **Save** to apply all coming soon settings.
+  </Step>
+</Steps>
+
+### Exporting captured emails
+
+When email capture is enabled and subscribers have signed up:
+
+- The captured email list appears in the **Email Capture** section.
+- Click **Copy** to copy all addresses to your clipboard (one per line).
+- Click **Export CSV** to download the list as a CSV file.
+- Click **Clear** to delete all captured addresses.

@@ -1,0 +1,172 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "WP Manager Pro",
+  "theme": "linden",
+  "colors": {
+    "primary": "#94cb04",
+    "light": "#545454",
+    "dark": "#94cb04"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "https://media.brand.dev/288cc7c4-5cef-4376-950b-bdf0083eedae.png",
+    "dark": "https://media.brand.dev/288cc7c4-5cef-4376-950b-bdf0083eedae.png"
+  },
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/nurkamol/wp-manager-pro"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/nurkamol/wp-manager-pro"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/dashboard",
+              "features/plugin-manager",
+              "features/theme-manager",
+              "features/file-manager",
+              "features/database-manager",
+              "features/user-manager"
+            ]
+          },
+          {
+            "group": "Site Management",
+            "pages": [
+              "features/maintenance-mode",
+              "features/debug-tools",
+              "features/image-tools",
+              "features/cron-manager",
+              "features/media-manager",
+              "features/system-info"
+            ]
+          },
+          {
+            "group": "Security",
+            "pages": [
+              "features/security-overview",
+              "features/security-login",
+              "features/security-hardening",
+              "features/security-integrity",
+              "features/security-2fa",
+              "features/security-scanner"
+            ]
+          },
+          {
+            "group": "Developer Tools",
+            "pages": [
+              "features/developer-utilities",
+              "features/dev-tools",
+              "features/code-snippets",
+              "features/database-tools"
+            ]
+          },
+          {
+            "group": "Agency Tools",
+            "pages": [
+              "features/agency-tools",
+              "features/white-label",
+              "features/client-reports"
+            ]
+          },
+          {
+            "group": "Content & Data",
+            "pages": [
+              "features/content-tools",
+              "features/redirect-manager",
+              "features/email-smtp",
+              "features/database-backup",
+              "features/audit-log",
+              "features/notes",
+              "features/reset-tools"
+            ]
+          },
+          {
+            "group": "Updates",
+            "pages": [
+              "features/update-manager"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/settings",
+              "configuration/branding",
+              "configuration/performance"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api/overview",
+              "api/authentication"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "api/dashboard",
+              "api/plugins",
+              "api/themes",
+              "api/files",
+              "api/database",
+              "api/users",
+              "api/maintenance",
+              "api/debug",
+              "api/images",
+              "api/security",
+              "api/cron",
+              "api/media",
+              "api/snippets",
+              "api/redirects",
+              "api/email",
+              "api/backup",
+              "api/audit",
+              "api/developer",
+              "api/scanner",
+              "api/settings",
+              "api/content",
+              "api/dev-tools",
+              "api/updates",
+              "api/agency",
+              "api/performance"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Changelog",
+        "groups": [
+          {
+            "group": "Release Notes",
+            "pages": [
+              "changelog/overview"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

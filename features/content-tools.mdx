@@ -1,0 +1,135 @@
+---
+title: "Content tools"
+description: "Bulk post editor, post duplicator, scheduled post manager, and options table editor. Added in v2.3.0."
+---
+
+**Content Tools** is a four-tab page for managing WordPress content and site configuration at scale. It provides a unified interface for editing posts in bulk, duplicating content, monitoring scheduled posts, and inspecting the `wp_options` table.
+
+<Info>
+  Content Tools was added in **v2.3.0**.
+</Info>
+
+<CardGroup cols={2}>
+  <Card title="Bulk post editor" icon="pencil" href="/features/content-tools#bulk-post-editor">
+    Edit post status, author, or categories across multiple posts at once.
+  </Card>
+  <Card title="Post duplicator" icon="copy" href="/features/content-tools#post-duplicator">
+    Clone any post or page as a draft with one click.
+  </Card>
+  <Card title="Scheduled post manager" icon="clock" href="/features/content-tools#scheduled-post-manager">
+    View all posts with a `scheduled` status and their publish dates in one list.
+  </Card>
+  <Card title="Options table editor" icon="table" href="/features/content-tools#options-table-editor">
+    Browse, search, and edit individual rows in `wp_options`.
+  </Card>
+</CardGroup>
+
+## Bulk post editor
+
+The **Bulk Post Editor** tab lets you browse posts across all public post types and apply changes to multiple items at once.
+
+### Browsing posts
+
+- Filter by **post type** using the dropdown (all public post types are available).
+- Filter by **status**: any, publish, draft, pending, private.
+- Search posts by title using the search field.
+- Results are paginated (20 per page by default, up to 100).
+
+Each row shows:
+
+| Column | Description |
+|--------|-------------|
+| Title | Post title with a link to the WordPress edit screen |
+| Type | Post type slug |
+| Status | Current post status badge |
+| Author | Display name of the post author |
+| Date | Publication or creation date |
+
+### Bulk editing
+
+<Steps>
+  <Step title="Select posts">
+    Tick the checkboxes on the rows you want to edit. Use the header checkbox to select all posts on the current page.
+  </Step>
+  <Step title="Choose an action">
+    Use the **Bulk Actions** toolbar that appears when posts are selected. Available actions:
+    - **Change status** — set all selected posts to `publish`, `draft`, `pending`, or `private`.
+    - **Change author** — reassign all selected posts to a different author (picks from users with `edit_posts` capability).
+  </Step>
+  <Step title="Apply">
+    Click **Apply** to save the change. A success toast confirms how many posts were updated.
+  </Step>
+</Steps>
+
+### Duplicating a single post
+
+Click the **Duplicate** icon (copy icon) on any post row. The post is cloned as a `draft` with the title prefixed `Copy of —`. The duplicate appears immediately at the top of the list.
+
+## Post duplicator
+
+The **Post Duplicator** tab provides the same duplication workflow but with a dedicated interface for searching and selecting a single post to clone. Useful when you need to find a specific post by title before duplicating.
+
+- Search by title across all public post types.
+- Click **Duplicate** on the desired result row.
+- The cloned draft is created and a link to its edit screen is shown in a toast notification.
+
+## Scheduled post manager
+
+The **Scheduled Post Manager** tab lists every post with a `future` (scheduled) status across all post types, sorted by scheduled publish date.
+
+Each row shows:
+
+| Column | Description |
+|--------|-------------|
+| Title | Post title with edit and preview links |
+| Type | Post type |
+| Scheduled | Formatted scheduled publish date and time |
+| Author | Post author display name |
+
+<Tip>
+  Use this view to audit scheduled content before a campaign or product launch. If a scheduled post is stuck (WordPress missed the cron trigger), you can open it in the editor and re-save to reschedule.
+</Tip>
+
+## Options table editor
+
+The **Options Table Editor** tab provides a paginated, searchable view of the `wp_options` table — WordPress's key-value store for plugin and theme settings.
+
+### Browsing options
+
+- Search by `option_name` using the search field.
+- Results are paginated at 50 rows per page.
+
+Each row shows:
+
+| Column | Description |
+|--------|-------------|
+| Option name | The `option_name` key |
+| Type | Value type: `string`, `array`, `object`, `bool`, `int`, or `serialized` |
+| Autoload | Whether the option is autoloaded on every page request (`yes` / `no`) |
+| Value | Truncated preview of the `option_value` |
+
+### Editing an option
+
+<Steps>
+  <Step title="Click the edit icon">
+    Click the **pencil** icon on the row for the option you want to edit. A dialog opens showing the full current value in a text area.
+  </Step>
+  <Step title="Edit the value">
+    Modify the value in the text area. For serialized values (arrays/objects), the text area shows the raw PHP serialized string — edit with caution.
+  </Step>
+  <Step title="Save">
+    Click **Save**. The option is updated via `update_option()` and the table row refreshes.
+  </Step>
+</Steps>
+
+<Warning>
+  Editing `wp_options` rows directly can break plugins or themes if values are modified incorrectly. Be especially careful with serialized data — an invalid serialized string will cause PHP unserialize errors. Always back up your database before making bulk changes.
+</Warning>
+
+### Deleting an option
+
+Click the **trash** icon on any row to delete the option. A confirmation dialog is shown before deletion.
+
+<Note>
+  Core WordPress options (such as `siteurl`, `blogname`, `admin_email`) cannot be deleted via this interface — only custom plugin and theme options.
+</Note>

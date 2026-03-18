@@ -1,0 +1,114 @@
+---
+title: "File Manager"
+description: "Browse and edit WordPress files directly in the browser using a Monaco Editor (VS Code engine) with full syntax highlighting."
+---
+
+The **File Manager** provides a full filesystem browser starting from `ABSPATH` (the WordPress root directory). A split-pane layout shows the file tree on the left and a Monaco Editor on the right when a file is open.
+
+## Filesystem browser
+
+The left panel shows directories and files sorted with directories first, then files alphabetically. Each entry displays:
+
+- File name and size (for files)
+- A **Read-only** badge when the file or directory is not writable by the web server
+- Rename and delete action buttons (visible on hover)
+
+Navigate using breadcrumb links at the top of the panel or by clicking directories. Use the **← ..** row to go up one level.
+
+### Toolbar actions
+
+| Button | Action |
+|--------|--------|
+| **Upload File** | Upload a single file to the current directory |
+| **New Folder** | Create a new directory inside the current directory |
+| **Refresh** | Re-fetch the current directory listing |
+
+## Editing files with Monaco Editor
+
+Clicking any file opens it in the Monaco Editor panel on the right. The editor uses the VS Code engine and provides:
+
+- Full syntax highlighting for PHP, JavaScript, TypeScript, CSS/SCSS, JSON, XML, YAML, HTML, SVG, and Markdown
+- Word wrap enabled by default
+- Automatic layout adjustment when the panel is resized
+- A status bar at the bottom showing the full file path and line count
+
+Supported file extensions for editing:
+
+```
+php  js  jsx  ts  tsx  css  scss  less  html  htm
+json  xml  txt  md  yml  yaml  env  htaccess  conf
+config  ini  log  svg  twig  blade
+```
+
+Click **Save** in the editor toolbar (or use the button) to write the changes back to the server. The editor is read-only for files where the web server does not have write permission.
+
+<Info>
+  Files larger than 2 MB cannot be opened in the editor. Attempting to open an oversized file returns an error. Use an external tool for large files such as database exports or build artifacts.
+</Info>
+
+## File operations
+
+### Uploading a file
+
+<Steps>
+  <Step title="Navigate to the target directory">
+    Browse to the directory where you want to upload the file.
+  </Step>
+  <Step title="Click Upload File">
+    Click the **Upload File** button in the toolbar. A native file picker opens.
+  </Step>
+  <Step title="Select a file">
+    Choose any file. The filename is sanitized before it is written to disk. The file is uploaded directly to the current directory.
+  </Step>
+</Steps>
+
+### Renaming a file or folder
+
+<Steps>
+  <Step title="Hover over the item">
+    Move your cursor over the file or folder row to reveal the action icons.
+  </Step>
+  <Step title="Click the rename icon">
+    Click the **Pencil** icon. A **Rename** dialog opens pre-filled with the current name.
+  </Step>
+  <Step title="Enter the new name and confirm">
+    Type the new name and click **Rename**, or press **Enter**. The name is sanitized before saving. Path separators (`/` and `\`) in the new name are rejected.
+  </Step>
+</Steps>
+
+### Creating a directory
+
+<Steps>
+  <Step title="Click New Folder">
+    Click the **New Folder** button in the toolbar.
+  </Step>
+  <Step title="Enter the directory name">
+    An inline input appears at the top of the file list. Type the directory name and press **Enter** or click the save icon.
+  </Step>
+</Steps>
+
+### Deleting a file or folder
+
+<Steps>
+  <Step title="Hover over the item">
+    Move your cursor over the file or folder row.
+  </Step>
+  <Step title="Click the delete icon">
+    Click the red **Trash** icon. A confirmation dialog appears.
+  </Step>
+  <Step title="Confirm deletion">
+    Click **Delete** in the dialog. Deleting a directory removes all of its contents recursively.
+  </Step>
+</Steps>
+
+## Security protections
+
+The File Manager enforces several server-side security controls:
+
+- **Path traversal prevention** — all paths are resolved with `realpath()` and verified to start with `ABSPATH` before any read, write, or delete operation. Requests for paths outside `ABSPATH` receive a `403 Forbidden` response.
+- **Critical file guard** — the files `wp-config.php`, `.htaccess`, and `index.php` at the WordPress root are protected. Delete and rename requests for these files are rejected.
+- **2 MB read limit** — files larger than 2 MB cannot be loaded into the editor to prevent memory exhaustion.
+
+<Warning>
+  `wp-config.php`, `.htaccess`, and `index.php` are write-protected in the **delete** and **rename** endpoints. You can still open and edit these files in the Monaco Editor if the web server has write access, but you cannot delete or rename them through the File Manager.
+</Warning>

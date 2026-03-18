@@ -1,0 +1,112 @@
+---
+title: "Maintenance Mode"
+description: "Put your site into maintenance mode with a fully customizable page — styled gradients, countdown timer, bypass roles, and a live preview."
+---
+
+**Maintenance Mode** displays a branded holding page to visitors while you work on your site. Administrators always see the site normally. Settings and the toggle are independent — you can save your design without activating maintenance, or activate it instantly with the current settings.
+
+## Status banner
+
+The top of the page shows whether maintenance is currently **Active** or **Inactive**. When active, an amber banner reminds you that regular visitors cannot access your content. Click **Enable** or **Disable** to toggle the mode at any time.
+
+<Warning>
+  While maintenance mode is active, all visitors who are not administrators (or in a configured bypass role) receive a `503 Service Unavailable` response with a `Retry-After: 3600` header.
+</Warning>
+
+## Settings tabs
+
+Settings are organised into three tabs. Changes in any tab update the live preview pane on the right in real time.
+
+<Tabs>
+  <Tab title="Content">
+    - **Page Title** — the heading displayed on the maintenance page (default: "Site Under Maintenance").
+    - **Message** — the body text beneath the title.
+    - **Show Badge** — toggle a small status pill at the top of the page. When enabled, a **Badge Text** field appears (max 30 characters).
+    - **Expected End Time** — an optional date/time field. When the countdown timer is off, this is informational only and can be referenced in your message text.
+  </Tab>
+  <Tab title="Appearance">
+    **Gradient presets** — six one-click presets apply a background gradient and matching accent colour:
+
+    | Preset | Start colour | End colour | Accent |
+    |--------|-------------|------------|--------|
+    | Midnight | `#1e1e2e` | `#0f3460` | `#4f8ef7` |
+    | Sunset | `#ff6b6b` | `#ffa500` | `#fff` |
+    | Forest | `#1a3a2a` | `#2d6a4f` | `#95d5b2` |
+    | Royal | `#2d1b69` | `#11998e` | `#c9b1ff` |
+    | Slate | `#1e293b` | `#334155` | `#94a3b8` |
+    | Candy | `#833ab4` | `#fd1d1d` | `#fcb045` |
+
+    **Custom colours** — override any of the four colour values individually using colour pickers or hex inputs:
+    - **Background Start** — left colour of the gradient.
+    - **Background End** — right colour of the gradient.
+    - **Accent / Divider** — the thin coloured bar under the title and countdown tile text.
+    - **Text Color** — all text on the maintenance page.
+
+    **Page Icon** — choose one of eight emoji presets (⚙️ 🔧 🚀 🛠️ ⚡ 🌙 🔒 🎯) or type any emoji into the custom input field. The icon floats with a subtle animation on the live page.
+  </Tab>
+  <Tab title="Access & Extras">
+    **Countdown timer** — toggle **Show Countdown Timer** to display a live days/hours/minutes/seconds counter on the maintenance page. Set the **Countdown End Time** to the target date and time. The preview pane ticks in real time.
+
+    **Bypass roles** — logged-in users with the selected roles can view the full site during maintenance. Administrators always bypass regardless of this setting.
+
+    **Maintenance scope** — choose which pages show the maintenance screen:
+    - **Whole Site** — all frontend pages.
+    - **Home Page Only** — only the front page and blog index.
+    - **Specific Paths** — enter URL path patterns (one per line). Wildcards are supported: `/shop/*` matches all shop pages.
+
+    **Show Toggle in Admin Bar** — adds a maintenance on/off switch to the WordPress admin bar for quick access.
+
+    **Secret Bypass URL** — generate a secret key and share the URL `/?wmp_preview=<key>` with clients or team members. Visiting the URL sets a 7-day cookie, granting access to the full site during maintenance without needing to log in. Click the refresh icon to auto-generate a random 16-character key.
+  </Tab>
+</Tabs>
+
+## Live preview
+
+The preview pane on the right updates instantly as you adjust any setting. The countdown tiles tick in real time if you have a countdown end time set. The preview is a faithful render of the actual maintenance page output.
+
+## Save settings vs. toggle
+
+The **Save Settings** button at the bottom of the settings card persists your design changes without activating or deactivating maintenance mode. The **Enable / Disable** button in the status banner toggles the mode and also saves the current settings at the same time.
+
+This means you can design your maintenance page in advance, save it, and enable it later with a single click.
+
+## How the maintenance page is generated
+
+When a visitor hits the site while maintenance is active, the plugin intercepts the request on the `template_redirect` hook (frontend only — the REST API and wp-admin are never blocked). It sends a `503 Service Unavailable` response and outputs a standalone HTML document with fully inline CSS. No theme files, no WordPress templates, and no external stylesheets are loaded.
+
+The page includes:
+- A CSS `linear-gradient` background using your configured colours.
+- The floating emoji icon.
+- The accent divider bar.
+- The title and message.
+- Optional countdown tiles driven by a small inline `<script>` tag.
+- Optional status badge.
+
+The maintenance state is stored as a WordPress option (`wmp_maintenance_active`). It is **automatically removed** when the plugin is deactivated, so your site returns to normal if you deactivate WP Manager Pro.
+
+## Setting up a maintenance page with countdown timer
+
+<Steps>
+  <Step title="Configure your content">
+    Open **Maintenance Mode** and click the **Content** tab. Enter a **Page Title** and **Message** that explain the situation to visitors.
+  </Step>
+  <Step title="Choose an appearance">
+    Click the **Appearance** tab. Click one of the six gradient presets, or use the colour pickers to set custom colours. Select an emoji icon for the page.
+  </Step>
+  <Step title="Enable the countdown">
+    Click the **Access & Extras** tab. Toggle **Show Countdown Timer** on, then set the **Countdown End Time** to your expected completion date and time. Watch the countdown tiles appear in the preview.
+  </Step>
+  <Step title="Save your settings">
+    Click **Save Settings** to persist the design without activating maintenance yet.
+  </Step>
+  <Step title="Activate maintenance mode">
+    When you are ready, click **Enable** in the status banner. The site immediately shows the maintenance page to all non-administrator visitors.
+  </Step>
+  <Step title="Disable when done">
+    Click **Disable** in the status banner when your work is complete. The site returns to normal instantly.
+  </Step>
+</Steps>
+
+<Tip>
+  Use the **Secret Bypass URL** to let a client review the live site during maintenance. Generate a key in the **Access & Extras** tab, copy the bypass URL, and share it. They can browse the site normally for 7 days without logging in.
+</Tip>

@@ -1,0 +1,78 @@
+---
+title: "Debug Tools"
+description: "Toggle WordPress debug constants in wp-config.php and view, filter, copy, or clear the error log without leaving the dashboard."
+---
+
+**Debug Tools** lets you control WordPress debug behaviour and inspect error output from a single page. All changes are written directly to `wp-config.php`.
+
+<Warning>
+  Debug settings carry production risk. See the notes on each constant below before enabling them on a live site.
+</Warning>
+
+## Debug constants
+
+The **Debug Constants** card lists all five constants with a toggle switch for each. Changes are staged in the UI — click **Save Debug Settings** to write them to `wp-config.php`.
+
+<Note>
+  The toggles are disabled if `wp-config.php` is not writable by the web server user. In that case, a warning banner appears and you must set the file permissions manually before using this feature.
+</Note>
+
+| Constant | Effect |
+|----------|--------|
+| `WP_DEBUG` | Enables WordPress debug mode. Required for the other debug constants to have effect. |
+| `WP_DEBUG_LOG` | Saves all PHP errors, warnings, and notices to `wp-content/debug.log`. Safe to enable in production. |
+| `WP_DEBUG_DISPLAY` | Echoes errors directly to the browser screen. **Do not enable in production** — visitors will see raw PHP error output. |
+| `SAVEQUERIES` | Records every database query in `$wpdb->queries`. Useful for performance analysis but slows down every page load. |
+| `SCRIPT_DEBUG` | Forces WordPress to load unminified `.dev.js` and `.dev.css` files instead of the production-minified versions. |
+
+Constants flagged as a production risk display a **Production risk** badge when enabled as a reminder.
+
+## Error log viewer
+
+The **Error Log** card displays the last 200 lines of your WordPress error log. The log path is auto-detected: the plugin checks for `wp-content/debug.log` first, then falls back to the path returned by PHP's `error_log` ini setting.
+
+### Filtering by level
+
+Use the **All Levels** dropdown in the header to filter the log to a specific severity:
+
+- **Errors only** — PHP `Fatal error` and `Parse error` lines.
+- **Warnings** — `PHP Warning` lines.
+- **Notices** — `PHP Notice` lines.
+- **Deprecated** — `PHP Deprecated` lines.
+
+### Log actions
+
+- **Copy** — copies the full visible log content to the clipboard.
+- **Refresh** — re-fetches the log from the server.
+- **Clear** — truncates the log file to zero bytes. The action is permanent.
+
+<Note>
+  The **Error Log Info** card shows the detected log file path, whether the file currently exists, and its size on disk.
+</Note>
+
+## Enabling debug mode safely
+
+<Steps>
+  <Step title="Enable WP_DEBUG and WP_DEBUG_LOG">
+    Toggle **WP_DEBUG** and **WP_DEBUG_LOG** on. Leave **WP_DEBUG_DISPLAY** off to avoid exposing errors to visitors.
+  </Step>
+  <Step title="Save the settings">
+    Click **Save Debug Settings**. The plugin updates `wp-config.php` with the new constant values.
+  </Step>
+  <Step title="Reproduce the issue">
+    Navigate to the page or perform the action that is causing the problem. PHP errors will be written to `wp-content/debug.log`.
+  </Step>
+  <Step title="View the log">
+    Return to **Debug Tools**. The **Error Log** card now shows the captured output. Use the level filter to focus on errors if the log is noisy.
+  </Step>
+  <Step title="Copy the log for sharing">
+    Click **Copy** to copy the log to the clipboard and paste it into a support ticket or issue tracker.
+  </Step>
+  <Step title="Disable debug mode when done">
+    Toggle **WP_DEBUG** and **WP_DEBUG_LOG** off and click **Save Debug Settings** to restore a clean production configuration. Optionally click **Clear** to remove the log file.
+  </Step>
+</Steps>
+
+<Warning>
+  Enabling `WP_DEBUG_DISPLAY` on a production site outputs raw PHP errors, stack traces, and file paths directly to the browser. This exposes internal server details to anyone who visits the site.
+</Warning>

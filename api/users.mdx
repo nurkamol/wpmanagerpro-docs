@@ -1,0 +1,169 @@
+---
+title: "Users API"
+description: "List, filter, and manage WordPress users, including role changes, login-as, deletion, and username renaming."
+---
+
+## GET /users
+
+Returns a paginated list of users with profile details and available roles.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/users?page=1&limit=20" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="page" type="integer">
+  Page number. Defaults to `1`.
+</ParamField>
+
+<ParamField path="limit" type="integer">
+  Users per page. Defaults to `20`, maximum `100`.
+</ParamField>
+
+<ParamField path="search" type="string">
+  Search term matched against login, email, and display name.
+</ParamField>
+
+<ParamField path="role" type="string">
+  Filter by WordPress role slug (e.g. `editor`, `subscriber`).
+</ParamField>
+
+### Response
+
+<ResponseField name="users" type="array">
+  <Expandable title="item properties">
+    <ResponseField name="id" type="integer">User ID.</ResponseField>
+    <ResponseField name="login" type="string">Username (`user_login`).</ResponseField>
+    <ResponseField name="email" type="string">User email address.</ResponseField>
+    <ResponseField name="display_name" type="string">Public display name.</ResponseField>
+    <ResponseField name="registered" type="string">Registration date in `Y-m-d H:i:s` format.</ResponseField>
+    <ResponseField name="roles" type="array">Array of role slugs assigned to the user.</ResponseField>
+    <ResponseField name="avatar" type="string">40px Gravatar URL.</ResponseField>
+    <ResponseField name="is_current" type="boolean">Whether this is the currently authenticated user.</ResponseField>
+    <ResponseField name="post_count" type="integer">Number of posts authored by this user.</ResponseField>
+    <ResponseField name="admin_url" type="string">Direct link to the user's edit page in wp-admin.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="total" type="integer">Total number of users matching the query.</ResponseField>
+<ResponseField name="pages" type="integer">Total number of pages.</ResponseField>
+<ResponseField name="roles" type="array">All available WordPress roles as `{key, name}` objects.</ResponseField>
+
+---
+
+## POST /users/change-role
+
+Changes the WordPress role for a user. You cannot change your own role.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/users/change-role \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": 5, "role": "editor"}'
+```
+
+### Parameters
+
+<ParamField path="user_id" type="integer" required>
+  ID of the user whose role to change.
+</ParamField>
+
+<ParamField path="role" type="string" required>
+  Role slug to assign (e.g. `editor`, `author`, `subscriber`). Must be a valid registered WordPress role.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="message" type="string">Confirmation message including the user's display name and new role.</ResponseField>
+
+---
+
+## POST /users/login-as
+
+Generates a single-use login URL to impersonate another user. The token embedded in the URL expires after 5 minutes and can only be used once.
+
+<Note>
+  The login URL includes a `wmp_login_as` parameter and a `wmp_token` parameter. When visited, WordPress switches the session to the target user. The original admin's ID is stored in user meta to allow switching back.
+</Note>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/users/login-as \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": 5}'
+```
+
+### Parameters
+
+<ParamField path="user_id" type="integer" required>
+  ID of the user to impersonate. Cannot be the currently logged-in user.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="login_url" type="string">Single-use login URL. Valid for 5 minutes. Redirect the browser to this URL to switch sessions.</ResponseField>
+<ResponseField name="message" type="string">Confirmation message with the target user's display name.</ResponseField>
+
+---
+
+## DELETE /users/delete
+
+Permanently deletes a user account. You cannot delete your own account.
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/users/delete \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": 5, "reassign": 1}'
+```
+
+### Parameters
+
+<ParamField path="user_id" type="integer" required>
+  ID of the user to delete.
+</ParamField>
+
+<ParamField path="reassign" type="integer">
+  ID of the user to reassign the deleted user's posts to. If omitted, posts are deleted along with the user.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="message" type="string">Confirmation message.</ResponseField>
+
+---
+
+## POST /users/rename
+
+Changes the `user_login` (username) of a user. WordPress does not expose a public API for changing usernames, so this endpoint performs a direct database update. You cannot rename your own account.
+
+<Warning>
+  Changing a username does not update any content that references the old username by string value. Ensure nothing in your application depends on a hard-coded username.
+</Warning>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/users/rename \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": 5, "username": "new_username"}'
+```
+
+### Parameters
+
+<ParamField path="user_id" type="integer" required>
+  ID of the user to rename.
+</ParamField>
+
+<ParamField path="username" type="string" required>
+  New username. Must not contain spaces or invalid characters. Must be unique across all users.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="message" type="string">Confirmation message.</ResponseField>
+<ResponseField name="username" type="string">The new username that was applied.</ResponseField>

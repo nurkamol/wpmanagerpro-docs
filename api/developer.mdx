@@ -1,0 +1,333 @@
+---
+title: "Developer API"
+description: "Explore WordPress hooks, REST routes, and the object cache, generate and remove dummy data, test rewrite rules, and rename the database table prefix."
+---
+
+<Note>All developer endpoints are available since v2.9.0.</Note>
+
+## GET /developer/hooks
+
+Returns all registered WordPress hooks and their callbacks. Results are limited to 2000 entries.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/developer/hooks?search=wp_head" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="search" type="string">
+  Filter results to hooks or callbacks whose name or source file contains this string.
+</ParamField>
+
+<ParamField path="file" type="string">
+  Filter results to callbacks defined in files whose path contains this string.
+</ParamField>
+
+### Response
+
+<ResponseField name="hooks" type="array">
+  <Expandable title="hook properties">
+    <ResponseField name="hook" type="string">The hook name.</ResponseField>
+    <ResponseField name="priority" type="integer">Callback priority.</ResponseField>
+    <ResponseField name="callback" type="string">Resolved callback name (e.g. `MyClass::myMethod` or `{closure}`).</ResponseField>
+    <ResponseField name="file" type="string">Source file path relative to `ABSPATH`. Empty if not resolvable.</ResponseField>
+    <ResponseField name="line" type="integer">Line number where the callback is defined. `0` if not resolvable.</ResponseField>
+    <ResponseField name="args" type="integer">Number of accepted arguments.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="total" type="integer">Number of entries returned (capped at 2000).</ResponseField>
+
+---
+
+## GET /developer/rest-routes
+
+Lists all registered WordPress REST API routes with their methods and namespace.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/developer/rest-routes \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="routes" type="array">
+  <Expandable title="route properties">
+    <ResponseField name="path" type="string">The REST route pattern (e.g. `/wp/v2/posts`).</ResponseField>
+    <ResponseField name="methods" type="array">HTTP methods registered for this route (e.g. `["GET", "POST"]`).</ResponseField>
+    <ResponseField name="namespace" type="string">Derived namespace from the first two path segments (e.g. `wp/v2`).</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="total" type="integer">Total number of routes.</ResponseField>
+
+---
+
+## POST /developer/rest-request
+
+Proxies an authenticated internal REST API request and returns the response along with timing information. Useful for testing REST endpoints from the browser.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/developer/rest-request \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"method": "GET", "path": "/wp/v2/posts", "body": {"per_page": 5}}'
+```
+
+### Parameters
+
+<ParamField path="method" type="string">
+  HTTP method: `GET`, `POST`, `PUT`, `PATCH`, or `DELETE`. Defaults to `GET`.
+</ParamField>
+
+<ParamField path="path" type="string" required>
+  The REST route path (e.g. `/wp/v2/posts`).
+</ParamField>
+
+<ParamField path="body" type="object">
+  Request parameters to pass to the internal request.
+</ParamField>
+
+<ParamField path="headers" type="object">
+  Additional headers to attach to the internal request.
+</ParamField>
+
+### Response
+
+<ResponseField name="status" type="integer">HTTP status code returned by the proxied request.</ResponseField>
+<ResponseField name="headers" type="object">Response headers from the proxied request.</ResponseField>
+<ResponseField name="body" type="any">Parsed response body.</ResponseField>
+<ResponseField name="duration_ms" type="number">Round-trip execution time in milliseconds.</ResponseField>
+
+---
+
+## POST /developer/generate
+
+Generates dummy posts, pages, users, or WooCommerce products tagged with `_wmp_dummy_data` for easy cleanup.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/developer/generate \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "post", "count": 10}'
+```
+
+### Parameters
+
+<ParamField path="type" type="string" required>
+  Type of content to generate: `post`, `page`, `user`, or `product` (requires WooCommerce).
+</ParamField>
+
+<ParamField path="count" type="integer">
+  Number of items to generate. Maximum `50`. Defaults to `1`.
+</ParamField>
+
+### Response
+
+<ResponseField name="generated" type="array">Array of IDs of the created items.</ResponseField>
+<ResponseField name="count" type="integer">Number of items successfully created.</ResponseField>
+<ResponseField name="errors" type="array">Array of error messages for items that failed to generate.</ResponseField>
+
+---
+
+## GET /developer/dummy-stats
+
+Returns counts of dummy-tagged posts and users currently in the database.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/developer/dummy-stats \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="posts" type="integer">Number of posts/pages/products tagged as dummy data.</ResponseField>
+<ResponseField name="users" type="integer">Number of users tagged as dummy data.</ResponseField>
+<ResponseField name="total" type="integer">Total dummy items across posts and users.</ResponseField>
+<ResponseField name="woo_active" type="boolean">Whether WooCommerce is active.</ResponseField>
+
+---
+
+## DELETE /developer/dummy
+
+Deletes all posts, pages, and users tagged with `_wmp_dummy_data`.
+
+<Warning>
+  This permanently deletes all dummy-tagged content and users. The operation cannot be undone.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/developer/dummy \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="deleted_posts" type="integer">Number of posts deleted.</ResponseField>
+<ResponseField name="deleted_users" type="integer">Number of users deleted.</ResponseField>
+<ResponseField name="total" type="integer">Total items deleted.</ResponseField>
+
+---
+
+## GET /developer/rewrite-test
+
+Tests a URL against the site's registered rewrite rules and returns which rule matched and what query variables were resolved.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/developer/rewrite-test?url=https://example.com/blog/my-post/" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="url" type="string">
+  The URL to test. The site URL prefix is stripped automatically.
+</ParamField>
+
+<ParamField path="rules_only" type="boolean">
+  If `true`, returns only the full list of rewrite rules without testing a URL.
+</ParamField>
+
+### Response
+
+<ResponseField name="url" type="string">The normalised URL path that was tested.</ResponseField>
+<ResponseField name="matched" type="boolean">`true` if a rewrite rule matched.</ResponseField>
+<ResponseField name="rule" type="string">The matching regex pattern.</ResponseField>
+<ResponseField name="redirect" type="string">The raw redirect string from the matched rule.</ResponseField>
+<ResponseField name="query_vars" type="object">Resolved WordPress query variables.</ResponseField>
+<ResponseField name="matches" type="array">Regex capture groups from the URL match.</ResponseField>
+<ResponseField name="all_rules" type="array">All registered rewrite rules as `{pattern, redirect}` objects.</ResponseField>
+
+---
+
+## GET /developer/cache-keys
+
+Browses object cache keys. Supports Redis (via SCAN) and the default WordPress in-memory cache.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/developer/cache-keys?prefix=wp_" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="prefix" type="string">
+  Filter keys to those containing this prefix string.
+</ParamField>
+
+### Response
+
+<ResponseField name="backend" type="string">The detected cache backend: `redis`, `wp`, or `none`.</ResponseField>
+<ResponseField name="keys" type="array">
+  <Expandable title="key properties">
+    <ResponseField name="key" type="string">Cache key name. For the default WP cache, the format is `group:key`.</ResponseField>
+    <ResponseField name="type" type="string">Value type: `string`, `set`, `list`, `zset`, `hash`, or `none`.</ResponseField>
+    <ResponseField name="ttl" type="integer">Time-to-live in seconds. `-1` means no expiry.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="total" type="integer">Total keys found (up to 500).</ResponseField>
+
+---
+
+## GET /developer/cache-value
+
+Retrieves the value of a specific cache key.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/developer/cache-value?key=posts:1" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="key" type="string" required>
+  The cache key to retrieve. For the default WP cache, use `group:key` format.
+</ParamField>
+
+### Response
+
+<ResponseField name="key" type="string">The requested cache key.</ResponseField>
+<ResponseField name="type" type="string">Value type.</ResponseField>
+<ResponseField name="value" type="any">The cached value. Type depends on the stored data.</ResponseField>
+
+---
+
+## DELETE /developer/cache-key
+
+Deletes a specific cache key.
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/developer/cache-key \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"key": "posts:1"}'
+```
+
+### Parameters
+
+<ParamField path="key" type="string" required>
+  The cache key to delete. For the default WP cache, use `group:key` format.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">`true` if the key was found and deleted.</ResponseField>
+
+---
+
+## GET /developer/prefix-info
+
+Returns the current database table prefix and a list of all matching tables with their row counts.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/developer/prefix-info \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="current_prefix" type="string">The current `$table_prefix` value (e.g. `wp_`).</ResponseField>
+<ResponseField name="tables" type="array">
+  <Expandable title="table properties">
+    <ResponseField name="name" type="string">Table name.</ResponseField>
+    <ResponseField name="rows" type="integer">Approximate row count.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="count" type="integer">Number of tables using the current prefix.</ResponseField>
+
+---
+
+## POST /developer/change-prefix
+
+Renames all database tables from the current prefix to a new one, updates option names in the `options` table, updates meta keys in the `usermeta` table, and rewrites the `$table_prefix` line in `wp-config.php`.
+
+<Warning>
+  Changing the database prefix is a destructive and non-reversible operation. Always create a full backup with `POST /backup/create` before proceeding. Use `dry_run: true` to preview the changes first.
+</Warning>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/developer/change-prefix \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"new_prefix": "mysite_", "dry_run": true}'
+```
+
+### Parameters
+
+<ParamField path="new_prefix" type="string" required>
+  The new table prefix. May contain letters, numbers, and underscores. A trailing underscore is appended automatically if omitted.
+</ParamField>
+
+<ParamField path="dry_run" type="boolean">
+  If `true`, returns a preview of the rename operations without making any changes. Defaults to `false`.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">`true` if all tables were renamed without errors.</ResponseField>
+<ResponseField name="old_prefix" type="string">The previous prefix.</ResponseField>
+<ResponseField name="new_prefix" type="string">The new prefix.</ResponseField>
+<ResponseField name="tables_renamed" type="integer">Number of tables renamed.</ResponseField>
+<ResponseField name="renamed" type="array">Array of `{old, new}` rename pairs.</ResponseField>
+<ResponseField name="errors" type="array">Error messages for any tables that failed to rename.</ResponseField>
+<ResponseField name="config_updated" type="boolean">Whether `wp-config.php` was updated successfully.</ResponseField>
+<ResponseField name="dry_run" type="boolean">Present and `true` when a dry run was performed. The `preview` array contains the proposed renames.</ResponseField>

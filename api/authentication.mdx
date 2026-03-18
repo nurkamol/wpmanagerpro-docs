@@ -1,0 +1,113 @@
+---
+title: "Authentication"
+description: "How to authenticate requests to the WP Manager Pro REST API using WordPress nonce authentication."
+---
+
+All WP Manager Pro API endpoints use **WordPress nonce authentication**. Every request must include a valid `wp_rest` nonce in the `X-WP-Nonce` request header.
+
+## How WordPress nonce authentication works
+
+A nonce is a one-time security token that WordPress generates per user session. The REST API uses the `wp_rest` action nonce to verify that a request originates from an authenticated, authorized user.
+
+When you send a request:
+1. WordPress reads the `X-WP-Nonce` header.
+2. It verifies the nonce against the current logged-in user's session.
+3. If the nonce is valid and the user has the `manage_options` capability, the request proceeds.
+4. If either check fails, WordPress returns a `401` or `403` error.
+
+## Required capability
+
+All endpoints require the `manage_options` capability, which is granted only to the **Administrator** role by default. Editors, Authors, and other roles cannot access any WP Manager Pro API endpoints.
+
+## Getting the nonce
+
+The nonce is automatically localized to the page via `wp_localize_script` under the key `wpManagerPro.nonce`:
+
+```javascript
+// Available in the browser after the plugin loads
+const nonce = wpManagerPro.nonce;
+```
+
+You can also retrieve a fresh nonce server-side using the standard WordPress REST API nonce endpoint:
+
+```bash
+curl -X GET https://example.com/wp-json/ \
+  --cookie "wordpress_logged_in_...=..."
+```
+
+The nonce is returned in the `X-WP-Nonce` response header from any authenticated REST request.
+
+## Using the nonce
+
+Pass the nonce in the `X-WP-Nonce` header on every request:
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/dashboard \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+<Note>
+  Nonces expire after approximately 12 hours. If a request returns a `401` error with `rest_cookie_invalid_nonce`, retrieve a fresh nonce and retry.
+</Note>
+
+## JavaScript example
+
+Here is a complete `fetch()` example using the localized nonce:
+
+```javascript
+async function getPlugins() {
+  const response = await fetch(
+    '/wp-json/wp-manager-pro/v1/plugins',
+    {
+      method: 'GET',
+      headers: {
+        'X-WP-Nonce': wpManagerPro.nonce,
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message);
+  }
+
+  return response.json();
+}
+```
+
+For POST requests, include the body as JSON:
+
+```javascript
+async function activatePlugin(pluginFile) {
+  const response = await fetch(
+    '/wp-json/wp-manager-pro/v1/plugins/activate',
+    {
+      method: 'POST',
+      headers: {
+        'X-WP-Nonce': wpManagerPro.nonce,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ plugin: pluginFile }),
+    }
+  );
+
+  return response.json();
+}
+```
+
+## curl example
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/plugins/activate \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"plugin": "woocommerce/woocommerce.php"}'
+```
+
+## Error responses
+
+| Code | Message | Cause |
+|------|---------|-------|
+| `401` | `rest_cookie_invalid_nonce` | Nonce is missing, expired, or invalid |
+| `403` | `rest_forbidden` | User does not have `manage_options` capability |

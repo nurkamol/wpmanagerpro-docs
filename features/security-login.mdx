@@ -1,0 +1,74 @@
+---
+title: "Login security"
+description: "Move wp-login.php to a secret URL, limit brute-force attempts, and review or clear the lockout log."
+---
+
+The **Login** tab gives you three tools to harden access to your WordPress admin: a custom login URL, a login attempt limiter, and a lockout log.
+
+## Admin URL protection
+
+Admin URL protection replaces the well-known `wp-login.php` path with a secret slug of your choosing. Once enabled:
+
+- **GET requests** to the original `wp-login.php` path are redirected to the homepage.
+- **POST requests** (the actual login form submission) still work normally — WordPress processes them internally.
+- **Password-reset flows** (`lostpassword`, `resetpass`, `rp`) and logout links are unaffected.
+
+Slugs must be at least 4 characters and may only contain lowercase letters, numbers, hyphens, and underscores. The following names are reserved and cannot be used: `wp-admin`, `wp-login`, `wp-content`, `wp-includes`, `admin`, `login`, `dashboard`.
+
+### Enabling admin URL protection
+
+<Warning>
+  Copy your new login URL before navigating away from this page. If you lose it you will need to disable the slug directly in the database or via WP-CLI.
+</Warning>
+
+<Steps>
+  <Step title="Enter a slug">
+    In the **Custom Login URL** card, type your secret slug into the input field (e.g. `my-secret-login`). The field is prefixed with `/` to show the final path.
+  </Step>
+  <Step title="Click Enable">
+    Click **Enable** (or **Update** if protection is already on). The page immediately shows your new login URL in a green banner.
+  </Step>
+  <Step title="Copy the new URL">
+    Click the copy icon next to the URL in the green banner to copy it to your clipboard. Store it somewhere safe — a password manager is ideal.
+  </Step>
+  <Step title="Test the URL">
+    Open the URL in a private browser window and confirm the WordPress login form appears.
+  </Step>
+</Steps>
+
+To disable protection, click **Disable Protection**. The site reverts to the standard `wp-login.php` URL immediately.
+
+## Login attempt limiter
+
+The login attempt limiter blocks an IP address after too many consecutive failed logins. Attempt counts are tracked with WordPress transients and expire automatically.
+
+| Setting | Description | Default |
+|---|---|---|
+| Max attempts | Number of failures before a lockout is triggered | 5 |
+| Window (seconds) | The period over which attempts are counted | 300 (5 min) |
+| Lockout (seconds) | How long the IP remains blocked | 900 (15 min) |
+
+Toggle **Enable login limiter**, adjust the three fields if needed, then click **Save Settings**.
+
+<Tip>
+  A window of 300 seconds with 5 attempts stops most automated tools while being forgiving enough for users who mistype their password.
+</Tip>
+
+## Lockout log
+
+The **Lockout Log** card shows a paginated history of every IP that has been locked out. Each row displays:
+
+- **IP** — the blocked IP address
+- **Username** — the username that was targeted
+- **Time** — timestamp of when the lockout was triggered
+- **Attempts** — total failed attempts recorded in the window
+
+### Actions
+
+- Click **Unlock** on any row to immediately release that IP. This deletes the lockout transient and removes the entry from the log.
+- Click **Clear** (the trash button in the card header) to bulk-delete all lockout log entries at once.
+- Click **Refresh** to reload the log without navigating away.
+
+<Note>
+  The log retains a maximum of 500 entries. Older entries are pruned automatically when new lockouts occur.
+</Note>

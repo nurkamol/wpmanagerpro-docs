@@ -1,0 +1,99 @@
+---
+title: "White-label"
+description: "Customise the WordPress login page with client branding and hide admin menu items and dashboard widgets from non-administrator roles."
+---
+
+WP Manager Pro's white-label tools cover two areas: the **Login Page** (customising `wp-login.php` with client branding) and the **Admin UI Customiser** (controlling what non-admin users see in the WordPress admin). Both are tabs within [Agency Tools](/features/agency-tools).
+
+<Note>
+  For plugin-level white-labelling — changing the plugin name, admin menu label, and sidebar logo — see **Settings > Branding**.
+</Note>
+
+## Login page customisation
+
+The **Login Page** tab lets you replace the default WordPress login page with a fully branded experience for your client.
+
+Enable the feature using the **Active/Inactive** toggle at the top of the tab. When enabled, the customisations are injected into `wp-login.php`.
+
+### Logo
+
+- **Logo URL** — paste a URL directly, or click **Media** to open the WordPress Media Library picker and select an image.
+- Click the **×** button to remove the current logo.
+- A thumbnail preview is shown beneath the URL field once a valid image is set.
+- Recommended size: transparent PNG, 220×80 px or wider.
+
+### Logo tooltip / heading text
+
+The **Logo tooltip / heading text** field replaces the default “Powered by WordPress” tooltip shown on hover over the logo. It also renders as a heading inside the login form card.
+
+### Colours
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| **Background colour** | `#f0f0f1` | Page background behind the login form |
+| **Button colour** | `#2271b1` | Background colour of the **Log In** button |
+
+Each field has a colour swatch you can click to open a native colour picker, plus a text input for typing a hex value directly.
+
+### Background image
+
+Click **Media** next to the **Background image** field to pick an image from the Media Library. When set, the background image overrides the background colour. Recommended size: 1920×1080 JPG.
+
+### Footer text
+
+The **Footer text** field renders small text below the login form card, suitable for a copyright notice or tagline.
+
+### Privacy and legal links
+
+- **Privacy Policy link** toggle — when enabled, the site's Privacy Policy page link is shown below the form.
+- **Custom links HTML** — a textarea accepting anchor tag HTML, displayed below the form. Supports `href`, `target`, and `rel` attributes.
+
+  ```html
+  <a href="/terms">Terms of Service</a> &middot; <a href="/cookies">Cookie Policy</a>
+  ```
+
+### Live preview
+
+The right-hand panel shows a **Live Preview** of the login page that updates in real time as you change settings. No save is needed to see the preview update.
+
+Click **Open login page** to open `wp-login.php` in a new tab and verify the live result.
+
+Click **Save Login Settings** to persist your changes.
+
+## Admin UI customiser
+
+The **Admin UI** tab lets you hide WordPress admin menu items and dashboard widgets from users who are not administrators. Admins always see the full interface.
+
+<Note>
+  Hidden items only apply to **non-administrator** roles. Users with the Administrator role always see the complete admin menu and all dashboard widgets.
+</Note>
+
+### Hiding admin menu items
+
+The **Admin Menu Items** card lists every registered top-level menu item. Check the items you want to hide from non-admin users. Each item shows its label and internal slug.
+
+<Info>
+  The menu list is populated from the WordPress admin menu. If the list appears empty, open the WordPress Dashboard first so the menu is registered.
+</Info>
+
+### Hiding dashboard widgets
+
+The **Dashboard Widgets** card lists all registered dashboard widgets. Check the widgets you want to hide from non-admin users. Each widget shows its label and context (normal, side, column3, etc.).
+
+<Info>
+  The widget list is populated after the WordPress Dashboard has been loaded at least once. If the list appears empty, visit the WordPress Dashboard first.
+</Info>
+
+### Saving
+
+Click **Save Admin UI Settings** to apply your changes. The settings take effect immediately on the next admin page load for non-admin users.
+
+## Plugin white-labelling
+
+To rename the plugin itself — changing the name shown in the WordPress admin menu, the plugin list, and the sidebar logo — go to **Settings > Branding** within WP Manager Pro. You can set:
+
+- **Custom Plugin Name** — replaces "WP Manager Pro" in the admin menu and plugin list.
+- **Admin Menu Label** — the label shown in the WordPress sidebar.
+- **Sidebar Logo URL** — replaces the plugin's default icon in the sidebar. A **Select** button opens the WordPress Media Library picker.
+
+Changes take effect immediately after saving and reloading the page.

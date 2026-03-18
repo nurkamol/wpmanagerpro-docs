@@ -1,0 +1,202 @@
+---
+title: "Performance"
+description: "Monitor database bloat, manage the transient cache, run targeted cleanup operations, and install a Redis object cache drop-in — all from one page."
+---
+
+The **Performance** page gives you visibility into database overhead and object cache status, and lets you remove unwanted data in bulk. It has four tabs: **Overview**, **Transients**, **DB Cleanup**, and **Object Cache**.
+
+## Object cache status banner
+
+At the top of the page, a status banner shows whether WordPress is using an external object cache:
+
+- **Green banner** — object caching is active. The cache type (Redis, Memcached, or External) is shown.
+- **Grey banner** — no external cache is active. WordPress is using the database as its cache store. A recommendation to install Redis or Memcached is shown.
+
+## Overview tab
+
+The **Overview** tab shows eight stat cards, one per cleanable item type. Cards with a non-zero count are highlighted in amber as a visual prompt to clean them up.
+
+| Stat | Source |
+|------|--------|
+| **Post Revisions** | `post_type = 'revision'` in `wp_posts`. Estimated disk size in KB is shown beneath the count. |
+| **Auto-Drafts** | `post_status = 'auto-draft'` in `wp_posts` |
+| **Trashed Content** | `post_status = 'trash'` in `wp_posts` (all post types) |
+| **Spam Comments** | `comment_approved = 'spam'` in `wp_comments` |
+| **Pending Comments** | `comment_approved = '0'` in `wp_comments` |
+| **Orphaned Post Meta** | Rows in `wp_postmeta` whose `post_id` no longer exists in `wp_posts` |
+| **Orphaned Comment Meta** | Rows in `wp_commentmeta` whose `comment_id` no longer exists in `wp_comments` |
+| **Expired Transients** | `_transient_timeout_*` options with a value less than the current Unix timestamp. The total transient count is shown as a sub-label. |
+
+If any cleanable items exist, a warning card appears below the stat grid with a link to the **DB Cleanup** tab.
+
+Click **Refresh** in the page header to re-fetch all counts from the database.
+
+## Transients tab
+
+The **Transients** tab lists all WordPress transients stored in the `wp_options` table, with search and pagination.
+
+### Reading the table
+
+Each row shows:
+
+- **Name** — the transient key (with the `_transient_` prefix stripped). Expired transients are marked with a red `expired` badge.
+- **Size** — the byte size of the stored value, formatted as B / KB / MB.
+- **Expires** — the human-readable expiry timestamp. Transients with no timeout are shown as **Persistent**. Expired timestamps are highlighted in red.
+
+The tab shows up to 50 transients per page. Use the previous/next buttons to paginate through large sets.
+
+### Searching transients
+
+Type a partial name in the search field and click **Search** to filter the list. Click **Clear** to reset the filter. Search is performed server-side against the `option_name` column.
+
+### Deleting a single transient
+
+Click the trash icon on any row to delete that transient immediately. Both the regular transient and its site transient counterpart are removed (`delete_transient()` and `delete_site_transient()` are both called).
+
+### Purging all expired transients
+
+Click **Purge Expired (N)** to delete all expired regular and site transients in one operation. The button is disabled when there are no expired transients. After the operation, a toast shows how many were deleted and the counts update automatically.
+
+## DB Cleanup tab
+
+The **DB Cleanup** tab lets you select one or more item types and delete them all at once.
+
+### Selecting items to clean
+
+Each item type is shown as a row with its label, description, and current count. Click a row to toggle it selected (highlighted in blue). Use **All** to select every type or **None** to deselect all.
+
+The footer of the card shows how many types are selected and the total number of items that will be deleted.
+
+### Running the cleanup
+
+Click **Run Cleanup** to open a confirmation dialog that lists each selected type and its item count. Click **Yes, delete all** to proceed.
+
+<Warning>
+  Cleanup operations are permanent and cannot be undone. Take a database backup before running cleanup on a production site if you are unsure.
+</Warning>
+
+The cleanup uses WordPress's own deletion functions:
+
+| Type | Method |
+|------|--------|
+| Post Revisions | `wp_delete_post_revision()` per revision ID |
+| Auto-Drafts | `wp_delete_post()` per post ID |
+| Trashed Content | `wp_delete_post()` per post ID |
+| Spam Comments | `wp_delete_comment()` per comment ID |
+| Pending Comments | `wp_delete_comment()` per comment ID |
+| Orphaned Post Meta | Direct `DELETE` SQL with `LEFT JOIN` |
+| Orphaned Comment Meta | Direct `DELETE` SQL with `LEFT JOIN` |
+| Expired Transients | `delete_transient()` and `delete_site_transient()` per key |
+
+After a successful cleanup, a toast shows the total number of items removed and the Overview counts refresh automatically.
+
+## Object Cache tab
+
+The **Object Cache** tab manages WP Manager Pro's bundled Redis object cache drop-in. It has two inner tabs: **Overview** and **Diagnostics**.
+
+### Status indicators
+
+The top bar shows the current connection status:
+
+| Status | Meaning |
+|--------|---------|
+| **Connected** (green) | The drop-in is installed and Redis is reachable. |
+| **Not enabled** (grey) | No drop-in is installed, or it is disabled. |
+| **Connection error** (red) | The drop-in is installed but Redis cannot be reached. |
+| **PhpRedis not loaded** (amber) | The `phpredis` PHP extension is missing. |
+
+If a connection error occurs, the error message from the Redis client is shown in a red banner beneath the status bar.
+
+### Overview inner tab
+
+The **Overview** inner tab has three sections:
+
+**Status rows** — four rows showing the current state of each component:
+
+- Object Cache Drop-in (`wp-content/object-cache.php`): installed or not, and whether it was installed by WP Manager Pro or a third-party plugin.
+- Redis Reachable: whether the server could connect to Redis using the configured constants.
+- `wp-content` Writable: whether the directory is writable by the web server user.
+- Cache Status: Active, Inactive, Error, or PhpRedis missing.
+
+**Connection details** — shown when a Redis connection has been configured. Fields include Scheme, Host, Port, Database, Timeout, Read Timeout, PhpRedis version, and Key Prefix (read from `WP_REDIS_PREFIX` or `WP_CACHE_KEY_SALT`).
+
+**Redis live stats** — shown only when the cache is connected. Eight metric tiles:
+
+| Metric | Description |
+|--------|-------------|
+| **Hit Ratio** | `keyspace_hits / (keyspace_hits + keyspace_misses)` as a percentage |
+| **Cached Keys** | Number of keys in the configured Redis database |
+| **Memory Used** | `used_memory_human` from Redis `INFO` |
+| **Uptime** | `uptime_in_seconds` formatted as minutes, hours, or days |
+| **Cache Hits** | Raw `keyspace_hits` value |
+| **Cache Misses** | Raw `keyspace_misses` value |
+| **Clients** | `connected_clients` from Redis `INFO` |
+| **Ops/sec** | `instantaneous_ops_per_sec` from Redis `INFO` |
+
+**This Request** — when the WP Manager Pro drop-in is active, additional stats from the current HTTP request are shown: WP Cache Hits, WP Cache Misses, Global Groups count, and Ignored Groups count.
+
+### Diagnostics inner tab
+
+The **Diagnostics** inner tab shows a plain-text dump of all relevant configuration values and connection results. This is useful for sharing with hosting support or when debugging a connection issue.
+
+The dump includes: status, drop-in state, Redis reachability, filesystem write access, PhpRedis version, PHP version, Redis version, host, port, database, timeouts, scheme, key prefix, Multisite status, any connection error, max memory policy, global groups, and ignored groups.
+
+### Drop-in actions
+
+| Action | When available | Effect |
+|--------|---------------|--------|
+| **Enable Object Cache** | Status is `not_enabled` and the bundled drop-in exists | Copies `includes/object-cache.php` from the plugin to `wp-content/object-cache.php` |
+| **Re-enable** | A disabled drop-in (`object-cache.php.disabled`) exists | Renames `object-cache.php.disabled` back to `object-cache.php` |
+| **Flush Cache** | Status is `connected` | Calls `wp_cache_flush()` to clear all keys |
+| **Disable** | Status is `connected` and the drop-in is ours | Renames `object-cache.php` to `object-cache.php.disabled` |
+| **Reinstall Drop-in** | Status is `error` | Re-copies the bundled drop-in, replacing the existing file |
+| **Refresh** | Always | Re-fetches all status data from the server |
+
+<Note>
+  The drop-in will not overwrite a third-party `object-cache.php` from another plugin without confirmation. If a conflict is detected, an error is shown and you must remove the other plugin's drop-in manually before installing.
+</Note>
+
+### Configuring Redis connection constants
+
+Add the following constants to `wp-config.php` before the `/* That's all, stop editing! */` line:
+
+```php
+// Required
+define( 'WP_REDIS_HOST', '127.0.0.1' );
+define( 'WP_REDIS_PORT', 6379 );
+
+// Optional
+define( 'WP_REDIS_DATABASE', 0 );         // Redis database index
+define( 'WP_REDIS_PASSWORD', 'secret' );  // Redis AUTH password
+define( 'WP_REDIS_TIMEOUT', 1.0 );        // Connection timeout in seconds
+define( 'WP_REDIS_READ_TIMEOUT', 1.0 );   // Read timeout in seconds
+define( 'WP_REDIS_PREFIX', 'mysite:' );   // Key prefix (isolates this site's keys)
+```
+
+For a Unix socket connection, use:
+
+```php
+define( 'WP_REDIS_SCHEME', 'unix' );
+define( 'WP_REDIS_HOST', '/var/run/redis/redis.sock' );
+```
+
+### Installing the Redis drop-in
+
+<Steps>
+  <Step title="Install Redis on your server">
+    Make sure Redis is running and the PhpRedis PHP extension is loaded. You can verify this in **Performance → Object Cache** — the status bar will show "PhpRedis not loaded" if the extension is missing.
+  </Step>
+  <Step title="Add connection constants to wp-config.php">
+    Add at minimum `WP_REDIS_HOST` and `WP_REDIS_PORT` to `wp-config.php`. See the configuration reference above.
+  </Step>
+  <Step title="Install the drop-in">
+    Go to **Performance → Object Cache**. If Redis is reachable, the status shows "Not enabled" and an **Enable Object Cache** button is visible. Click it to copy the bundled `object-cache.php` drop-in into `wp-content/`.
+  </Step>
+  <Step title="Verify the connection">
+    The status changes to **Connected** and the live stats tiles populate with data from your Redis server. The Hit Ratio starts at 0% and climbs as WordPress pages are served through the cache.
+  </Step>
+</Steps>
+
+<Tip>
+  Set `WP_REDIS_PREFIX` to a unique string (for example, the site domain) when running multiple WordPress sites on the same Redis instance. This prevents cache key collisions between sites.
+</Tip>

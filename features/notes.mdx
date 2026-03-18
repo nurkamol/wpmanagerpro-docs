@@ -1,0 +1,68 @@
+---
+title: "Notes"
+description: "Color-coded, persistent notes stored in the database — create, edit, and delete reminders that survive plugin updates."
+---
+
+**Notes** is a simple, persistent note-taking tool built into WP Manager Pro. Notes are stored in the `wp_wmp_notes` database table, which is created on plugin activation and survives plugin updates.
+
+## The notes grid
+
+Notes are displayed in a responsive masonry-style grid (1–4 columns depending on screen width). Each note card shows:
+
+- The note **title**
+- The note **content** (up to six lines, truncated if longer)
+- The **last updated** date
+- Edit (pencil) and delete (trash) icon buttons
+
+Notes are ordered by last updated date, with the most recently edited note appearing first.
+
+## Color options
+
+Each note can be assigned one of six colors. The color is applied to the card's background and border:
+
+| Color | Appearance |
+|-------|------------|
+| **Default** | White background, slate border |
+| **Blue** | Blue-50 background, blue border |
+| **Green** | Green-50 background, green border |
+| **Yellow** | Yellow-50 background, yellow border |
+| **Red** | Red-50 background, red border |
+| **Purple** | Purple-50 background, purple border |
+
+## Creating a note
+
+<Steps>
+  <Step title="Click New Note">
+    Click **New Note** in the top-right corner of the Notes page.
+  </Step>
+  <Step title="Enter a title">
+    Type a title in the **Title** field. A title is required.
+  </Step>
+  <Step title="Write the content">
+    Type the note body in the **Content** textarea. Content is optional.
+  </Step>
+  <Step title="Choose a color">
+    Click one of the six color swatches to assign a color to the note. The selected swatch scales up slightly to indicate selection.
+  </Step>
+  <Step title="Click Create Note">
+    Click **Create Note**. The note is saved and appears in the grid.
+  </Step>
+</Steps>
+
+## Editing a note
+
+Click the pencil icon on a note card to open the edit dialog. The same form is shown with the existing title, content, and color pre-filled. Make your changes and click **Update Note**.
+
+## Deleting a note
+
+Click the trash icon on a note card. A confirmation dialog asks you to confirm before the note is permanently deleted.
+
+## Persistence
+
+Notes are stored in the `wp_wmp_notes` database table. They persist across:
+
+- Plugin deactivation and reactivation
+- Plugin updates
+- WordPress updates
+
+Notes are only removed if you delete the plugin and its database tables, or manually truncate the `wp_wmp_notes` table.

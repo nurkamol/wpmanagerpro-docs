@@ -1,0 +1,231 @@
+---
+title: "Performance API"
+description: "Object cache monitoring, transient management, database cleanup, and cache drop-in installation."
+---
+
+<Note>
+  Performance API endpoints were added in **v1.9.0**.
+</Note>
+
+**Base path:** `/wp-json/wp-manager-pro/v1/performance`
+
+All endpoints require `X-WP-Nonce` header with a `wp_rest` nonce and the `manage_options` capability.
+
+---
+
+## GET /performance/overview
+
+Returns a comprehensive performance overview: object cache status, database stats, transient counts, and cache hit ratios.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/performance/overview \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="object_cache" type="object">
+  Object cache status.
+  <Expandable title="properties">
+    <ResponseField name="active" type="boolean">Whether object caching is enabled.</ResponseField>
+    <ResponseField name="type" type="string">Cache driver: `redis`, `memcached`, `external`, or `default`.</ResponseField>
+    <ResponseField name="drop_in_exists" type="boolean">Whether a `wp-content/object-cache.php` drop-in is installed.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="transients" type="object">
+  <Expandable title="properties">
+    <ResponseField name="total" type="integer">Total number of stored transients.</ResponseField>
+    <ResponseField name="expired" type="integer">Number of expired transients still in the database.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="db_stats" type="object">
+  <Expandable title="properties">
+    <ResponseField name="total_size_mb" type="number">Total database size in MB.</ResponseField>
+    <ResponseField name="table_count" type="integer">Number of database tables.</ResponseField>
+    <ResponseField name="overhead_mb" type="number">Reclaimable space from deleted rows in MB.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## GET /performance/transients
+
+Returns a paginated list of stored transients.
+
+```bash
+curl "https://example.com/wp-json/wp-manager-pro/v1/performance/transients?search=woocommerce&page=1" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField query="search" type="string">
+  Filter by transient name substring.
+</ParamField>
+<ParamField query="page" type="integer">
+  Page number. Defaults to 1.
+</ParamField>
+
+### Response
+
+<ResponseField name="transients" type="array">
+  Array of transient objects.
+  <Expandable title="Transient object">
+    <ResponseField name="name" type="string">Transient key (without `_transient_` prefix).</ResponseField>
+    <ResponseField name="expiry" type="string|null">Human-readable expiry time, or `null` if no expiry.</ResponseField>
+    <ResponseField name="expired" type="boolean">Whether the transient has passed its expiry time.</ResponseField>
+    <ResponseField name="size" type="integer">Byte size of the serialized value.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="total" type="integer">Total matching transients.</ResponseField>
+<ResponseField name="total_pages" type="integer">Total pages.</ResponseField>
+
+---
+
+## DELETE /performance/transients
+
+Delete a specific transient by name.
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/performance/transients \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "woocommerce_cart_hash_12345"}'
+```
+
+### Parameters
+
+<ParamField body="name" type="string" required>
+  The transient key (without `_transient_` prefix) to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## POST /performance/transients/purge-expired
+
+Deletes all expired transients from the database.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/performance/transients/purge-expired \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="deleted" type="integer">Number of expired transients removed.</ResponseField>
+
+---
+
+## POST /performance/cleanup
+
+Runs one or more database cleanup operations.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/performance/cleanup \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"types": ["revisions", "spam_comments", "orphaned_postmeta"]}'
+```
+
+### Parameters
+
+<ParamField body="types" type="array" required>
+  Array of cleanup types to run. Accepted values:
+  - `revisions` — delete all post revisions
+  - `auto_drafts` — delete auto-draft posts
+  - `spam_comments` — delete spam comments
+  - `trash_comments` — delete trashed comments
+  - `orphaned_postmeta` — delete post meta rows with no matching post
+  - `orphaned_usermeta` — delete user meta rows with no matching user
+  - `orphaned_termmeta` — delete term meta rows with no matching term
+  - `orphaned_commentmeta` — delete comment meta rows with no matching comment
+</ParamField>
+
+### Response
+
+<ResponseField name="results" type="object">Object where each key is a cleanup type and the value is the number of rows deleted.</ResponseField>
+
+---
+
+## GET /performance/object-cache
+
+Returns detailed object cache diagnostics and live statistics (Redis or Memcached).
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/performance/object-cache \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="active" type="boolean">Whether object caching is active.</ResponseField>
+<ResponseField name="type" type="string">Cache driver (`redis`, `memcached`, `external`, or `default`).</ResponseField>
+<ResponseField name="connected" type="boolean">Whether the connection to the cache server is live.</ResponseField>
+<ResponseField name="host" type="string">Cache server host.</ResponseField>
+<ResponseField name="port" type="integer">Cache server port.</ResponseField>
+<ResponseField name="stats" type="object">
+  Live cache statistics (driver-specific).
+  <Expandable title="Redis stats example">
+    <ResponseField name="used_memory_human" type="string">Human-readable memory usage.</ResponseField>
+    <ResponseField name="connected_clients" type="integer">Number of connected clients.</ResponseField>
+    <ResponseField name="total_commands_processed" type="integer">Total commands processed.</ResponseField>
+    <ResponseField name="keyspace_hits" type="integer">Cache hits.</ResponseField>
+    <ResponseField name="keyspace_misses" type="integer">Cache misses.</ResponseField>
+    <ResponseField name="hit_rate" type="number">Cache hit rate as a percentage.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="wp_stats" type="object">WordPress object cache stats for the current request (groups, hits, misses).</ResponseField>
+<ResponseField name="diagnostics" type="string">Raw diagnostic text output.</ResponseField>
+<ResponseField name="drop_in_exists" type="boolean">Whether `wp-content/object-cache.php` exists.</ResponseField>
+<ResponseField name="drop_in_valid" type="boolean">Whether the drop-in is a recognised Redis/Memcached implementation.</ResponseField>
+
+---
+
+## POST /performance/object-cache/flush
+
+Flushes all keys from the object cache.
+
+<Warning>
+  Flushing the object cache will temporarily increase database load as WordPress rebuilds cached values on the next requests.
+</Warning>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/performance/object-cache/flush \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## POST /performance/object-cache/drop-in
+
+Installs, updates, or removes the Redis object cache drop-in file at `wp-content/object-cache.php`.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/performance/object-cache/drop-in \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"action": "install"}'
+```
+
+### Parameters
+
+<ParamField body="action" type="string" required>
+  One of:
+  - `install` — copy the bundled Redis drop-in to `wp-content/object-cache.php`
+  - `update` — replace an existing drop-in with the bundled version
+  - `remove` — delete `wp-content/object-cache.php`
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="message" type="string">Confirmation message describing the action taken.</ResponseField>

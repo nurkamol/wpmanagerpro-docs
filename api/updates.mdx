@@ -1,0 +1,258 @@
+---
+title: "Updates API"
+description: "Check, run, roll back, and schedule plugin, theme, and WordPress core updates with history tracking."
+---
+
+<Note>
+  Update Manager API endpoints were added in **v2.6.0**.
+</Note>
+
+**Base path:** `/wp-json/wp-manager-pro/v1/updates`
+
+All endpoints require `X-WP-Nonce` header with a `wp_rest` nonce and the `manage_options` capability.
+
+---
+
+## GET /updates/available
+
+Returns all pending updates for plugins, themes, and WordPress core.
+
+```bash
+curl "https://example.com/wp-json/wp-manager-pro/v1/updates/available" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField query="force" type="boolean">
+  If `true`, forces WordPress to re-query WordPress.org for fresh update data before returning results.
+</ParamField>
+
+### Response
+
+Returns an array of update items:
+
+<ResponseField name="id" type="string">Composite ID: `plugin:slug/file.php`, `theme:slug`, or `core:wordpress`.</ResponseField>
+<ResponseField name="type" type="string">`plugin`, `theme`, or `core`.</ResponseField>
+<ResponseField name="slug" type="string">Plugin/theme slug or `wordpress` for core.</ResponseField>
+<ResponseField name="file" type="string">Plugin file path (plugins only).</ResponseField>
+<ResponseField name="name" type="string">Human-readable name.</ResponseField>
+<ResponseField name="current" type="string">Currently installed version.</ResponseField>
+<ResponseField name="new_version" type="string">Version available for update.</ResponseField>
+<ResponseField name="changelog_url" type="string">URL to the WordPress.org changelog page.</ResponseField>
+
+---
+
+## GET /updates/changelog
+
+Returns changelog information for a specific update item.
+
+```bash
+curl "https://example.com/wp-json/wp-manager-pro/v1/updates/changelog?type=plugin&slug=woocommerce" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField query="type" type="string" required>
+  `plugin` or `theme`.
+</ParamField>
+<ParamField query="slug" type="string" required>
+  Plugin or theme slug.
+</ParamField>
+
+### Response
+
+<ResponseField name="sections" type="object">Object containing changelog HTML, keyed by section name (e.g. `changelog`).</ResponseField>
+
+---
+
+## POST /updates/run
+
+Run one or more updates.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/updates/run \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"items": [{"type": "plugin", "file": "woocommerce/woocommerce.php", "slug": "woocommerce"}]}'
+```
+
+### Parameters
+
+<ParamField body="items" type="array" required>
+  Array of items to update. Each item must include `type` (`plugin`, `theme`, or `core`), and either `file` (plugins) or `slug` (themes/core).
+</ParamField>
+
+### Response
+
+Returns an array of result objects:
+
+<ResponseField name="id" type="string">The composite item ID.</ResponseField>
+<ResponseField name="status" type="string">`done` or `failed`.</ResponseField>
+<ResponseField name="error" type="string|null">Error message if status is `failed`.</ResponseField>
+<ResponseField name="from_version" type="string">Version before the update.</ResponseField>
+<ResponseField name="to_version" type="string">Version after the update.</ResponseField>
+<ResponseField name="has_backup" type="boolean">Whether a backup was captured before updating.</ResponseField>
+
+---
+
+## POST /updates/rollback
+
+Roll back a previously updated item to its pre-update backup.
+
+<Warning>
+  Rollback only works if a backup was captured when the update was run. The `has_backup` field in history entries indicates availability.
+</Warning>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/updates/rollback \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"history_id": "plugin:woocommerce/woocommerce.php:1735000000"}'
+```
+
+### Parameters
+
+<ParamField body="history_id" type="string" required>
+  The history entry ID to roll back (from the history list).
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /updates/history
+
+Returns the update history log.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/updates/history \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+Returns an array of history entries (up to 100 most recent):
+
+<ResponseField name="id" type="string">History entry ID.</ResponseField>
+<ResponseField name="name" type="string">Plugin/theme/core name.</ResponseField>
+<ResponseField name="type" type="string">`plugin`, `theme`, or `core`.</ResponseField>
+<ResponseField name="slug" type="string">Slug.</ResponseField>
+<ResponseField name="from_version" type="string">Version before update.</ResponseField>
+<ResponseField name="to_version" type="string">Version after update.</ResponseField>
+<ResponseField name="date" type="string">ISO 8601 timestamp of when the update ran.</ResponseField>
+<ResponseField name="status" type="string">`done`, `failed`, or `rolled-back`.</ResponseField>
+<ResponseField name="error" type="string|null">Error message if applicable.</ResponseField>
+<ResponseField name="has_backup" type="boolean">Whether a rollback backup is available.</ResponseField>
+
+---
+
+## DELETE /updates/history/clear
+
+Clears all update history entries (backup files are not deleted).
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/updates/history/clear \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /updates/scheduled
+
+Returns all scheduled update jobs.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/updates/scheduled \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+Returns an array of scheduled job objects:
+
+<ResponseField name="id" type="string">Job ID.</ResponseField>
+<ResponseField name="type" type="string">`plugin`, `theme`, or `core`.</ResponseField>
+<ResponseField name="slug" type="string">Slug.</ResponseField>
+<ResponseField name="run_at" type="integer">Unix timestamp of the scheduled run time.</ResponseField>
+<ResponseField name="created_at" type="string">ISO 8601 creation timestamp.</ResponseField>
+<ResponseField name="status" type="string">`pending` or `running`.</ResponseField>
+<ResponseField name="next_run" type="integer|null">Next WP Cron fire time as Unix timestamp.</ResponseField>
+<ResponseField name="next_run_human" type="string">Human-readable next run time.</ResponseField>
+
+---
+
+## POST /updates/schedule
+
+Schedule an update job.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/updates/schedule \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "plugin", "slug": "woocommerce", "run_at": 1740000000}'
+```
+
+### Parameters
+
+<ParamField body="type" type="string" required>
+  `plugin`, `theme`, or `core`.
+</ParamField>
+<ParamField body="slug" type="string" required>
+  Plugin/theme slug or `wordpress` for core.
+</ParamField>
+<ParamField body="run_at" type="integer" required>
+  Unix timestamp for when to run the update.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="job_id" type="string">ID of the created scheduled job.</ResponseField>
+
+---
+
+## POST /updates/schedule/cancel
+
+Cancel a scheduled update job.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/updates/schedule/cancel \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"job_id": "plugin:woocommerce:1740000000"}'
+```
+
+### Parameters
+
+<ParamField body="job_id" type="string" required>
+  The job ID to cancel.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /updates/check-self
+
+Checks whether WP Manager Pro itself has an update available.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/updates/check-self \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="has_update" type="boolean">Whether an update is available.</ResponseField>
+<ResponseField name="current_version" type="string">Currently installed version.</ResponseField>
+<ResponseField name="latest_version" type="string">Latest available version.</ResponseField>

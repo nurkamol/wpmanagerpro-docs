@@ -1,0 +1,79 @@
+---
+title: "Database backup"
+description: "Create full SQL database backups via the browser, download or delete them on demand, and configure automatic scheduled backups with automatic pruning. Added in v1.4.0."
+---
+
+The **Database Backup** page lets you create, download, and delete SQL database backups from within the WordPress admin. Backups are stored in a protected directory on your server and can be scheduled to run automatically.
+
+<Info>
+  Database Backup was added in **v1.4.0**. Scheduled Backups were added in **v1.8.0**.
+</Info>
+
+## Storage location
+
+All backups are stored in `wp-content/wmp-backups/`. This directory is protected from direct web access by an `.htaccess` file, so backup files cannot be downloaded by visiting a URL directly. Download them through the backup list in WP Manager Pro.
+
+## The backup list
+
+The backup list table shows all existing backups with:
+
+| Column | Description |
+|--------|-------------|
+| **Filename** | The SQL dump filename |
+| **Size** | Human-readable file size |
+| **Created** | Date and time the backup was created |
+
+Two actions are available per backup:
+
+- **Download** (arrow icon) — generates a temporary download URL and triggers the file download in your browser.
+- **Delete** (trash icon) — permanently deletes the backup file from the server after a confirmation dialog.
+
+## Creating a manual backup
+
+<Steps>
+  <Step title="Click Create Backup">
+    Click **Create Backup** in the top-right corner of the Database Backup page.
+  </Step>
+  <Step title="Wait for the backup to complete">
+    The button changes to **Creating backup...** with a spinner. The backup is a full SQL dump of all database tables.
+  </Step>
+  <Step title="Download the backup">
+    Once complete, the new backup appears at the top of the list. Click the download icon to save it to your local machine.
+  </Step>
+</Steps>
+
+<Tip>
+  Download a backup and store it off-server (e.g. in cloud storage or your local machine) before running any major operation such as a plugin update, database prefix change, or search-and-replace.
+</Tip>
+
+## Scheduled backups
+
+The **Scheduled Backups** card at the bottom of the page lets you automate recurring database backups using WP Cron.
+
+### Setting up a scheduled backup
+
+<Steps>
+  <Step title="Enable auto-backup">
+    Flip the **Enable Auto-Backup** toggle to on. The frequency and retain fields appear.
+  </Step>
+  <Step title="Choose a frequency">
+    Select how often backups should run:
+    - **Daily** — runs once every 24 hours
+    - **Weekly** — runs once every 7 days
+    - **Monthly** — runs once every 30 days
+  </Step>
+  <Step title="Set the retain limit">
+    Choose how many backups to keep: **3**, **5**, **10**, or **30**. When a new scheduled backup runs and the limit is exceeded, the oldest backup is automatically deleted.
+  </Step>
+  <Step title="Click Save Schedule">
+    Click **Save Schedule**. The next scheduled run time appears below the form.
+  </Step>
+</Steps>
+
+### Automatic pruning
+
+After each scheduled backup run, the plugin counts the backups in `wp-content/wmp-backups/` and deletes the oldest files until the count is at or below the retain limit. Only backups created by the scheduler are considered in the pruning count.
+
+<Warning>
+  If WP Cron is disabled on your server (`DISABLE_WP_CRON` is set to `true`), scheduled backups will not run unless you have configured a real server cron job. See [Cron Manager](/features/cron-manager) for instructions on setting up a real cron job.
+</Warning>

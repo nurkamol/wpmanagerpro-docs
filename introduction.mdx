@@ -1,0 +1,95 @@
+---
+title: "Introduction"
+description: "WP Manager Pro is an agency-ready WordPress management suite that replaces dozens of separate admin plugins with a single, fast, React-powered control panel."
+---
+
+**WP Manager Pro** is a comprehensive WordPress management plugin built for agencies, freelance developers, and WordPress administrators who need full control over every aspect of a site from one place. After installing and activating it, a complete React-powered control panel appears under the **WP Manager** menu in WP Admin — no page reloads, no context switching.
+
+All operations run through a secured REST API (`wp-manager-pro/v1`) that requires the `manage_options` capability on every route.
+
+## Architecture
+
+WP Manager Pro is split into two layers:
+
+- **React 19 frontend** — a single-page application compiled with Vite 6 and TypeScript 5.7, bundled to `assets/build/index.js`. It runs inside the standard WordPress admin shell and communicates exclusively through the plugin's REST API.
+- **PHP REST API backend** — 96 endpoints registered under the `wp-manager-pro/v1` namespace. Each endpoint is handled by a dedicated PHP controller class loaded by the singleton `WP_Manager_Pro\Plugin` bootstrap.
+
+The frontend is localized via `wp_localize_script` with the API base URL and a WordPress nonce, so every fetch call is pre-authenticated without any extra configuration.
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Plugin Manager" icon="puzzle-piece" href="/features/plugin-manager">
+    Install, activate, update, and export plugins. Browse WordPress.org and install any version from the version history dialog.
+  </Card>
+  <Card title="Theme Manager" icon="palette" href="/features/theme-manager">
+    Manage installed themes, activate, update, install from WordPress.org, and export ZIPs.
+  </Card>
+  <Card title="File Manager" icon="folder-open" href="/features/file-manager">
+    Full filesystem browser with Monaco Editor (VS Code engine) for syntax-highlighted in-browser editing.
+  </Card>
+  <Card title="Database Manager" icon="database" href="/features/database-manager">
+    Browse tables, edit rows, run read-only SQL queries, search & replace, optimize, and export SQL dumps.
+  </Card>
+  <Card title="User Manager" icon="users" href="/features/user-manager">
+    Manage users, change roles, rename login usernames, and use secure admin impersonation (Login As).
+  </Card>
+  <Card title="Security Suite" icon="lock" href="/features/security-overview">
+    Five-tab suite: admin URL protection, login limiter, IP blocklist, WordPress core integrity check, and TOTP two-factor authentication.
+  </Card>
+  <Card title="Security Scanner" icon="shield-halved" href="/features/security-scanner">
+    Malware scanner, vulnerability checks via WPScan CVE API, SSL certificate monitor, and core version check.
+  </Card>
+  <Card title="Maintenance Mode" icon="wrench" href="/features/maintenance-mode">
+    Toggle a styled maintenance page with gradient presets, emoji icon picker, countdown timer, and live preview pane.
+  </Card>
+  <Card title="Image Tools" icon="image" href="/features/image-tools">
+    WebP and AVIF conversion on upload, batch processing, thumbnail regeneration, and SVG support with server-side sanitization.
+  </Card>
+  <Card title="Agency Tools" icon="building" href="/features/agency-tools">
+    Mail interceptor, white-label login page, admin UI customiser, client report generator, and coming soon mode.
+  </Card>
+  <Card title="Developer Utilities" icon="terminal" href="/features/developer-utilities">
+    Hook explorer, REST API tester, dummy data generator, rewrite rules tester, object cache browser, and database prefix changer.
+  </Card>
+  <Card title="Cron Manager" icon="clock" href="/features/cron-manager">
+    View, trigger, and delete cron events. Add custom schedules and monitor cron health.
+  </Card>
+  <Card title="Media Manager" icon="photo-film" href="/features/media-manager">
+    Find and remove orphaned, unused, and duplicate media files. Re-compress JPEG and PNG attachments in bulk.
+  </Card>
+  <Card title="Code Snippets" icon="code" href="/features/code-snippets">
+    Run custom PHP, CSS, and JavaScript from the dashboard using Monaco Editor with per-snippet enable/disable toggle.
+  </Card>
+  <Card title="Database Backup" icon="floppy-disk" href="/features/database-backup">
+    Full or table-specific SQL dumps via the browser, with scheduled backups via WP Cron and configurable retention.
+  </Card>
+  <Card title="Debug Tools" icon="bug" href="/features/debug-tools">
+    Toggle WP_DEBUG constants directly in `wp-config.php`, view and filter the error log, and clear it with one click.
+  </Card>
+</CardGroup>
+
+## Requirements
+
+| Requirement | Minimum |
+|-------------|----------|
+| WordPress | 5.9+ |
+| PHP | 7.4+ |
+| MySQL / MariaDB | 5.6+ |
+| Browser | Modern (ES2020+) |
+
+## Security model
+
+Every REST endpoint enforces the `manage_options` capability check. Users without this capability receive a `403 Forbidden` response. Authentication uses WordPress nonce validation on every request — the nonce is scoped to `wp_rest` and is passed in the `X-WP-Nonce` header.
+
+Additional security measures applied throughout the plugin:
+
+- File Manager paths are validated with `realpath()` to prevent path traversal outside `ABSPATH`.
+- `wp-config.php`, `.htaccess`, and `index.php` are write-protected in delete and rename endpoints.
+- The SQL query runner accepts only `SELECT`, `SHOW`, `DESCRIBE`, and `EXPLAIN` statements.
+- Login-As tokens are single-use, stored in WordPress transients, and expire after 5 minutes.
+- SVG uploads are sanitized server-side to strip `<script>` tags, `on*` event attributes, `javascript:` hrefs, `<foreignObject>`, and `<base>` tags.
+
+<Note>
+  WP Manager Pro works on WordPress Multisite but is designed for single-site use. It activates on a per-site basis. Network-level management and super-admin actions are not currently supported.
+</Note>

@@ -1,0 +1,102 @@
+---
+title: "Installation"
+description: "Install WP Manager Pro from a ZIP file or build it from source."
+---
+
+## Install from ZIP
+
+<Steps>
+  <Step title="Download the plugin ZIP">
+    Download `wp-manager-pro-v2.9.4.zip` from the [Releases](https://github.com/nurkamol/wp-manager-pro/releases) page on GitHub.
+  </Step>
+  <Step title="Upload via WP Admin">
+    In WP Admin, navigate to **Plugins → Add New → Upload Plugin**. Choose the ZIP file and click **Install Now**.
+  </Step>
+  <Step title="Activate the plugin">
+    After installation completes, click **Activate Plugin**.
+  </Step>
+  <Step title="Open WP Manager Pro">
+    Click **WP Manager** in the admin sidebar, or click **Open** in the plugin row on the **Plugins** list page.
+  </Step>
+</Steps>
+
+<Note>
+  After activation, **WP Manager** appears near the top of the admin sidebar at menu position 2, just below the Dashboard entry.
+</Note>
+
+## Manual installation
+
+If you prefer to install via the command line, unzip the archive directly into your plugins directory:
+
+```bash
+unzip wp-manager-pro-v2.9.4.zip -d /path/to/wp-content/plugins/
+```
+
+Then activate the plugin via **WP Admin → Plugins**.
+
+## Build from source
+
+If you want to modify the React frontend or contribute to the project, follow these steps to build WP Manager Pro from source.
+
+### Prerequisites
+
+You need Node.js 18 or higher and npm 9 or higher:
+
+```bash
+node --version  # must be >= 18
+npm --version   # must be >= 9
+```
+
+### Setup and development
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/nurkamol/wp-manager-pro.git
+    cd wp-manager-pro
+    ```
+  </Step>
+  <Step title="Install dependencies">
+    <CodeGroup>
+
+    ```bash npm
+    npm install
+    ```
+
+    </CodeGroup>
+  </Step>
+  <Step title="Start the development server">
+    ```bash
+    npm run dev
+    ```
+
+    Vite starts a dev server. Changes to files in `src/` are reflected immediately.
+  </Step>
+  <Step title="Build for production">
+    ```bash
+    npm run build
+    ```
+
+    This runs `tsc -b && vite build` and outputs two files:
+
+    ```
+    assets/build/index.js    (~773 kB, ~216 kB gzipped)
+    assets/build/style.css   (~51 kB, ~9 kB gzipped)
+    ```
+
+    The build uses `format: 'iife'` so all bundle variables are function-scoped and cannot shadow WordPress globals.
+  </Step>
+  <Step title="Package the plugin ZIP">
+    From the parent directory of your cloned repository, run:
+
+    ```bash
+    cd ..
+    zip -r wp-manager-pro-v2.9.4.zip \
+      wp-manager-pro/wp-manager-pro.php \
+      wp-manager-pro/includes/ \
+      wp-manager-pro/assets/build/
+    ```
+
+    The resulting ZIP contains only the files needed for production — PHP source, built JS/CSS assets, and no `node_modules`.
+  </Step>
+</Steps>

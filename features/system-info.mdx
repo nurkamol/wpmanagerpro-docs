@@ -1,0 +1,79 @@
+---
+title: "System Info"
+description: "A complete snapshot of your WordPress installation, PHP environment, database, server configuration, active plugins, defined constants, and upcoming cron jobs."
+---
+
+**System Info** provides a read-only dashboard of your entire server environment. All data is fetched live each time you load the page (with a 60-second stale-time cache). Use **Refresh** to force a reload and **Copy All** to copy the full payload as JSON to the clipboard — useful for sharing with a developer or support team.
+
+## WordPress tab
+
+The **WordPress Core** card shows:
+
+- WordPress version
+- Site URL and home URL
+- Site locale and charset
+- Whether multisite is enabled
+- Memory limit and maximum memory limit
+- WordPress table prefix
+
+The **Debug Settings** card shows the current state of `WP_DEBUG`, `WP_DEBUG_LOG`, and `WP_DEBUG_DISPLAY` as enabled/disabled status rows.
+
+## PHP tab
+
+The **PHP Configuration** card shows:
+
+- PHP version
+- Operating system and architecture
+- PHP memory limit and maximum execution time
+- Upload max filesize and post max size
+- Disabled functions (if any)
+
+The **PHP Extensions** card shows a status row for each of the most relevant extensions: cURL, GD Library, ImageMagick, mbstring, OpenSSL, ZIP, Intl, and OPcache.
+
+The **All Extensions** card lists every loaded PHP extension as a scrollable, alphabetically sorted badge list.
+
+## Database tab
+
+Shows the database connection details and runtime information:
+
+- Host
+- Database name
+- MySQL / MariaDB version
+- Database size (total across all tables)
+- Connection charset and collation
+
+## Server tab
+
+Shows the web server environment:
+
+- Server software (e.g. `Apache/2.4.57` or `nginx/1.25.3`)
+- Server IP address and port
+- Request protocol
+- HTTPS status (shown as an enabled/disabled indicator)
+- Available disk space and total disk size
+
+## Constants tab
+
+Lists every WordPress constant that is currently defined, with the constant name and its value displayed in a monospace font. This includes constants defined in `wp-config.php`, by plugins, and by WordPress core itself.
+
+<Note>
+  Sensitive constants such as `DB_PASSWORD` and `AUTH_KEY` are redacted — their values are replaced with `***` in the output.
+</Note>
+
+## Active plugins tab
+
+Lists every currently active plugin with:
+
+- Plugin name
+- Plugin file path (relative to `wp-content/plugins/`)
+- Installed version
+
+## Cron jobs tab
+
+Shows the next 20 upcoming scheduled cron events, each with:
+
+- Hook name
+- Recurrence schedule (or `once` for one-time events)
+- Next run time
+
+This is a quick view of the nearest upcoming events. For full cron management — including manual triggering, adding schedules, and health monitoring — see the [Cron Manager](/features/cron-manager) page.

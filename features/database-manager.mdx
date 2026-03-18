@@ -1,0 +1,113 @@
+---
+title: "Database Manager"
+description: "Browse tables, edit rows, run SQL queries, search and replace across all tables, optimize, and export SQL dumps."
+---
+
+The **Database Manager** gives you direct access to your WordPress database. It is organized into three tabs: **Tables**, **Search & Replace**, and **SQL Query**.
+
+## Tables tab
+
+The **Tables** tab has a two-panel layout:
+
+- **Left panel** — a scrollable list of all database tables. Each entry shows the table name, row count, and size in MB. WordPress core tables (those starting with the site prefix) are displayed in a brighter color.
+- **Right panel** — the **Table Data** view for the selected table.
+
+### Table data viewer
+
+Clicking a table in the left panel opens its data in the right panel. The header bar shows:
+
+- Total row count and the current page range
+- The detected primary key column
+- A **rows per page** selector (50, 100, 250, or 500)
+- **Refresh**, **Add Row**, and **Export SQL** buttons
+
+Rows are paginated. Navigation controls at the bottom let you jump to the first page, previous page, a specific page, next page, or last page.
+
+Each row shows all column values (truncated at 220 characters with a tooltip for the full value). Hovering a row reveals **Edit** (pencil) and **Delete** (trash) icons in the actions column.
+
+### Inserting a row
+
+<Steps>
+  <Step title="Click Add Row">
+    Click the **Add Row** button in the table header. The button is only available for tables that have a detected primary key.
+  </Step>
+  <Step title="Fill in the fields">
+    An **Add Row** dialog opens with an input for every column. Auto-increment columns are disabled and show `auto-generated`. Leave nullable columns blank to insert `NULL`.
+  </Step>
+  <Step title="Click Insert Row">
+    Click **Insert Row** to write the record to the database.
+  </Step>
+</Steps>
+
+### Editing a row
+
+<Steps>
+  <Step title="Hover the row">
+    Move your cursor over the row to reveal the action icons.
+  </Step>
+  <Step title="Click the edit icon">
+    Click the **Pencil** icon to open the **Edit Row** dialog. All columns are shown. The primary key field is disabled.
+  </Step>
+  <Step title="Save changes">
+    Edit the values and click **Save Changes**.
+  </Step>
+</Steps>
+
+### Deleting a row
+
+<Steps>
+  <Step title="Hover the row and click the delete icon">
+    Click the red **Trash** icon on the target row.
+  </Step>
+  <Step title="Confirm">
+    An inline confirmation appears in the actions cell. Click **Confirm** to delete the row, or **✕** to cancel.
+  </Step>
+</Steps>
+
+### Exporting a table as SQL
+
+Click the **Export SQL** button in the table header. The browser downloads a `.sql` file named `{table_name}.sql`. The dump includes a `DROP TABLE IF EXISTS` statement, the full `CREATE TABLE` statement, and `INSERT INTO` rows for all existing data.
+
+### Optimizing tables
+
+- **Optimize All** — click the **Optimize All** button in the page header to run `OPTIMIZE TABLE` on every WordPress-prefixed table at once.
+- **Single table** — this is done through the **Optimize All** button which targets all tables. Per-table optimization is not exposed separately in the UI but the backend accepts a `tables` array parameter.
+
+## Search & Replace tab
+
+The **Search & Replace** tab performs a find-and-replace operation across every WordPress-prefixed table in the database.
+
+| Field | Description |
+|-------|-------------|
+| **Search for** | The text string to find |
+| **Replace with** | The replacement string |
+| **Dry run** | Enabled by default — previews matches without modifying data |
+| **Case insensitive** | Use `str_ireplace` / `LIKE` matching instead of exact-case |
+
+<Warning>
+  Always run a **Dry run** first to preview affected rows before performing an actual replacement. Disable **Dry run** and run again to commit the changes.
+</Warning>
+
+### Serialized data handling
+
+The Search & Replace engine detects serialized PHP values in each column. Before replacing, it unserializes the value, performs the replacement recursively through all nested arrays and objects, re-serializes the result, and then fixes any incorrect string-length prefixes (the `s:{len}:"..."` format). This prevents corrupt serialized data from breaking WordPress options or post meta.
+
+After running, a results card shows how many replacements were found (dry run) or made per table.
+
+## SQL Query tab
+
+The **SQL Query** tab provides a read-only SQL runner. Type any query into the text area and click **Run Query**.
+
+<Warning>
+  Only `SELECT`, `SHOW`, `DESCRIBE` (and `DESC`), and `EXPLAIN` statements are permitted. Any other statement — including `INSERT`, `UPDATE`, `DELETE`, `DROP`, and `ALTER` — is rejected with a `403` error. Use the **Table Data** tab to insert, edit, or delete rows.
+</Warning>
+
+Results are displayed in a scrollable table with column headers. The total row count is shown above the results.
+
+```sql
+-- Example queries
+SELECT * FROM wp_options WHERE option_name = 'siteurl';
+SHOW TABLE STATUS;
+DESCRIBE wp_posts;
+EXPLAIN SELECT * FROM wp_postmeta WHERE meta_key = '_thumbnail_id';
+```

@@ -1,0 +1,63 @@
+---
+title: "Security hardening"
+description: "Reduce your WordPress attack surface with one-click toggles for XML-RPC and version exposure, plus a persistent IP blocklist."
+---
+
+The **Hardening** tab provides three complementary controls that reduce the information and entry points available to attackers.
+
+## Disable XML-RPC
+
+XML-RPC (`xmlrpc.php`) is a legacy remote-procedure interface that WordPress enables by default. It is a common target for brute-force credential stuffing and application-layer DDoS amplification.
+
+Enabling **Disable XML-RPC** applies the `xmlrpc_enabled` WordPress filter, which causes WordPress to return a 405 response to all XML-RPC requests. Legitimate uses (Jetpack, mobile apps) that rely on XML-RPC will stop working.
+
+## Hide WordPress version
+
+The WordPress version number is broadcast in two places by default:
+
+1. The `<meta name="generator" content="WordPress X.Y.Z">` tag in every page's `<head>`.
+2. `?ver=X.Y.Z` query strings appended to enqueued script and stylesheet URLs.
+
+Enabling **Hide WordPress Version** removes both. Attackers cannot trivially determine whether your installation is running an outdated version with known CVEs.
+
+### Saving hardening settings
+
+Toggle either or both options, then click **Save Hardening Settings**. Changes take effect immediately for all subsequent page requests.
+
+## IP blocklist
+
+The IP blocklist blocks individual IPv4 addresses or CIDR ranges from accessing your site. The check runs on the WordPress `init` hook — before any theme or plugin output — and terminates the request with a 403 response.
+
+CIDR enforcement uses a bitwise mask comparison, so blocking `10.0.0.0/24` correctly covers all 256 addresses in that subnet.
+
+<Info>
+  CIDR notation expresses a range of IP addresses as a network address followed by a prefix length. For example, `192.168.1.0/24` covers `192.168.1.0` through `192.168.1.255` (256 addresses). A `/32` covers exactly one address.
+</Info>
+
+### Adding an IP to the blocklist
+
+<Steps>
+  <Step title="Enter the IP or CIDR range">
+    In the **IP Blocklist** card, type a single IPv4 address (e.g. `203.0.113.45`) or a CIDR range (e.g. `10.0.0.0/24`) into the first input field.
+  </Step>
+  <Step title="Add an optional note">
+    Enter a short description in the **Note** field — for example, `spam bot` or `failed scan on 2026-01`. The note is only visible in this UI.
+  </Step>
+  <Step title="Click Block">
+    Click **Block**. The entry appears in the blocklist table immediately and the counter in the header updates.
+  </Step>
+</Steps>
+
+To remove an entry, click **Remove** on its row. The IP is unblocked immediately.
+
+### Blocklist table columns
+
+| Column | Description |
+|---|---|
+| IP / CIDR | The blocked address or range |
+| Note | The optional description you entered |
+| Added | Date the entry was created |
+
+<Note>
+  Both IPv4 addresses and IPv4 CIDR ranges are supported. IPv6 input is validated but CIDR matching for IPv6 is not currently implemented.
+</Note>

@@ -1,0 +1,125 @@
+---
+title: "Settings"
+description: "Configure plugin branding, export and import configuration bundles, browse the version history, and find answers to common questions."
+---
+
+The **Settings** page is the central configuration hub for WP Manager Pro. It has four tabs: **Branding**, **Export / Import**, **Changelog**, and **FAQ**.
+
+## Branding tab
+
+The **Branding** tab lets you white-label the plugin — changing how it appears inside WordPress admin — and set your preferred Command Palette shortcut.
+
+See [Branding](/configuration/branding) for a full reference on every white-label field.
+
+## Export / Import tab
+
+The **Export / Import** tab lets you download a signed JSON bundle of plugin settings and restore it on the same site or a different one.
+
+### Exporting settings
+
+Select the sections you want to include, then click **Export Settings** to download a `wmp-settings-YYYY-MM-DD.json` file.
+
+The available sections are:
+
+| Section | What it contains |
+|---------|------------------|
+| **Branding** | Plugin name, menu label, logo URL |
+| **Maintenance** | All `wmp_maintenance_*` options |
+| **SMTP / Email** | All `wmp_smtp_*` and `wmp_email_*` options |
+| **Image Settings** | WebP, AVIF, and SVG options |
+| **Code Snippets** | All rows from `wp_wmp_snippets` |
+| **Redirects** | All rows from `wp_wmp_redirects` |
+| **Notes** | All rows from `wp_wmp_notes` |
+
+The bundle is signed with an HMAC-SHA256 signature computed from the export payload using the site's WordPress auth salt. The signature is stored in the `_signature` key of the JSON file.
+
+<Warning>
+  The export bundle includes SMTP passwords and other sensitive values in plain text. Store the file securely and do not share it publicly.
+</Warning>
+
+### Importing settings
+
+Drop a previously exported `.json` file onto the drop zone, or click the zone to browse for a file. The plugin reads the file and shows a preview:
+
+- **Exported from** — the site URL the bundle was created on.
+- **Date** — the export timestamp.
+- **Plugin version** — the version of WP Manager Pro that created the bundle.
+- **Sections detected** — which sections are present in the file.
+
+Select which sections to overwrite on the current site, then click **Import**.
+
+<Note>
+  If the bundle was created on a different site, the HMAC signature will not match and a warning is shown. The import still proceeds — you choose which sections to overwrite.
+</Note>
+
+### WordPress XML export
+
+Below the JSON import card, a **WordPress Content Export** section lets you download a standard WordPress WXR XML file. Choose from:
+
+- **All Content**
+- **Posts only**
+- **Pages only**
+- **Media only**
+- **Custom post type** — enter the post type slug
+
+Click **Export WordPress XML** to download the file. The plugin calls WordPress's built-in `export_wp()` function, so the output is fully compatible with the standard WordPress importer.
+
+## Changelog tab
+
+The **Changelog** tab shows the complete version history of WP Manager Pro as a collapsible accordion. The most recent version is expanded by default and highlighted so you can see what changed in the release you are running.
+
+Each entry lists:
+
+- Version number and release date
+- A bulleted list of changes, additions, and bug fixes in that release
+
+Click any version header to expand or collapse its entry.
+
+## FAQ tab
+
+The **FAQ** tab contains 9 common questions about WP Manager Pro. The first question is expanded by default.
+
+At the bottom of the tab, a **Still have a question?** link opens a new GitHub issue directly so you can ask the maintainers.
+
+<AccordionGroup>
+  <Accordion title="How do I upgrade the plugin to a new version?">
+    Go to **Plugins → Add New → Upload Plugin** and upload the new `.zip` file. WordPress replaces the existing files in-place and keeps the plugin active. Make sure the ZIP contains the `wp-manager-pro/` folder at its root.
+  </Accordion>
+  <Accordion title="Why does the admin menu label not update immediately after saving?">
+    The WordPress admin menu is rendered server-side on every page load. After saving a new menu label in **Settings → Branding**, reload the browser tab and the new label appears in the WordPress left-hand menu.
+  </Accordion>
+  <Accordion title="What does Settings Export / Import include?">
+    The export bundle includes: Branding, Maintenance settings, SMTP / Email config, Image settings, Code Snippets, Redirects, and Notes. It is signed with an HMAC using the source site's WordPress auth salt. Sensitive values like SMTP passwords are included in plain text — treat the file as a secret.
+  </Accordion>
+  <Accordion title="How does the Command Palette shortcut work?">
+    Press **Cmd+Shift+P** (Mac) or **Ctrl+Shift+P** (Windows / Linux) to open the Command Palette from anywhere inside the plugin. You can change the shortcut to **⌘ Shift K** or **⌘ K** in **Settings → Branding → Command Palette Shortcut**. The setting is saved in `localStorage` and takes effect immediately without a page reload.
+
+    <Warning>
+      **⌘ K** conflicts with WordPress's own command palette on admin pages. The default **⌘ Shift P** avoids this conflict.
+    </Warning>
+  </Accordion>
+</AccordionGroup>
+
+## Changing the plugin display name
+
+<Steps>
+  <Step title="Open Settings">
+    In the WordPress admin sidebar, click **WP Manager** (or your custom label) to open WP Manager Pro, then navigate to **Settings**.
+  </Step>
+  <Step title="Enter the new name">
+    On the **Branding** tab, type your preferred name in the **Plugin Name** field. This name appears in the plugin's sidebar header.
+  </Step>
+  <Step title="Update the admin menu label">
+    Type the label you want to appear in the WordPress left-hand navigation menu in the **Admin Menu Label** field.
+  </Step>
+  <Step title="Save">
+    Click **Save Settings**. A success toast confirms the save.
+  </Step>
+  <Step title="Reload the page">
+    Reload the browser tab. The new label is now visible in the WordPress admin sidebar.
+  </Step>
+</Steps>
+
+<Note>
+  Renaming the plugin does not affect file paths, database table names, or the REST API namespace. All API routes remain under `wp-manager-pro/v1`.
+</Note>

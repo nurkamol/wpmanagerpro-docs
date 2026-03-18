@@ -1,0 +1,169 @@
+---
+title: "Email API"
+description: "Configure SMTP settings, send test emails, and browse the outgoing email log."
+---
+
+<Note>All email endpoints are available since v1.4.0.</Note>
+
+## GET /email/settings
+
+Returns the current SMTP configuration. The stored password is masked and never returned in plain text.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/email/settings \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="settings" type="object">
+  <Expandable title="properties">
+    <ResponseField name="enabled" type="boolean">Whether SMTP routing is active.</ResponseField>
+    <ResponseField name="host" type="string">SMTP server hostname.</ResponseField>
+    <ResponseField name="port" type="integer">SMTP port number.</ResponseField>
+    <ResponseField name="username" type="string">SMTP authentication username.</ResponseField>
+    <ResponseField name="password" type="string">Always returned as `••••••••` — the raw password is never exposed.</ResponseField>
+    <ResponseField name="encryption" type="string">Encryption method: `none`, `ssl`, or `tls`.</ResponseField>
+    <ResponseField name="from_email" type="string">Override sender email address.</ResponseField>
+    <ResponseField name="from_name" type="string">Override sender display name.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## POST /email/settings
+
+Saves SMTP configuration. If the `password` field is `••••••••` or omitted, the existing stored password is kept unchanged.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/email/settings \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true, "host": "smtp.example.com", "port": 587, "username": "user@example.com", "password": "secret", "encryption": "tls", "from_email": "no-reply@example.com", "from_name": "My Site"}'
+```
+
+### Parameters
+
+<ParamField path="enabled" type="boolean">
+  Enable or disable SMTP routing for all outgoing WordPress email.
+</ParamField>
+
+<ParamField path="host" type="string">
+  SMTP server hostname (e.g. `smtp.gmail.com`).
+</ParamField>
+
+<ParamField path="port" type="integer">
+  SMTP port. Common values: `587` (STARTTLS), `465` (SSL), `25` (plain). Defaults to `587`.
+</ParamField>
+
+<ParamField path="username" type="string">
+  SMTP authentication username.
+</ParamField>
+
+<ParamField path="password" type="string">
+  SMTP authentication password. Pass `••••••••` or omit this field to keep the existing password.
+</ParamField>
+
+<ParamField path="encryption" type="string">
+  Encryption method: `none`, `ssl`, or `tls`. Defaults to `tls`.
+</ParamField>
+
+<ParamField path="from_email" type="string">
+  Override the sender email address for all outgoing mail.
+</ParamField>
+
+<ParamField path="from_name" type="string">
+  Override the sender display name for all outgoing mail.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true`.</ResponseField>
+<ResponseField name="settings" type="object">The saved settings object with the password masked.</ResponseField>
+
+---
+
+## POST /email/test
+
+Sends a test email to verify that the SMTP configuration is working.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/email/test \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"to": "admin@example.com"}'
+```
+
+### Parameters
+
+<ParamField path="to" type="string" required>
+  Recipient email address for the test message.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">`true` if `wp_mail()` returned successfully.</ResponseField>
+<ResponseField name="message" type="string">Confirmation or error message.</ResponseField>
+
+---
+
+## GET /email/log
+
+Returns a paginated list of sent and failed email attempts logged by the plugin.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/email/log?page=1&per_page=50" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="page" type="integer">
+  Page number. Defaults to `1`.
+</ParamField>
+
+<ParamField path="per_page" type="integer">
+  Results per page. Defaults to `50`, maximum `200`.
+</ParamField>
+
+<ParamField path="status" type="string">
+  Filter by status: `sent` or `failed`. Omit to return all entries.
+</ParamField>
+
+### Response
+
+<ResponseField name="emails" type="array">
+  <Expandable title="email log entry properties">
+    <ResponseField name="id" type="integer">Log entry ID.</ResponseField>
+    <ResponseField name="to_email" type="string">Recipient address(es).</ResponseField>
+    <ResponseField name="subject" type="string">Email subject.</ResponseField>
+    <ResponseField name="message" type="string">Email body.</ResponseField>
+    <ResponseField name="headers" type="string">Email headers.</ResponseField>
+    <ResponseField name="status" type="string">`sent` or `failed`.</ResponseField>
+    <ResponseField name="error" type="string">Error message if status is `failed`, otherwise empty.</ResponseField>
+    <ResponseField name="created_at" type="string">Timestamp when the email was sent.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="total" type="integer">Total log entries.</ResponseField>
+<ResponseField name="page" type="integer">Current page.</ResponseField>
+<ResponseField name="per_page" type="integer">Results per page.</ResponseField>
+<ResponseField name="total_pages" type="integer">Total pages.</ResponseField>
+
+---
+
+## DELETE /email/log/clear
+
+Permanently deletes all email log entries.
+
+<Warning>
+  This truncates the entire email log table. All history of sent and failed emails is removed.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/email/log/clear \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>

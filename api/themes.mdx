@@ -1,0 +1,226 @@
+---
+title: "Themes API"
+description: "List, activate, install, update, upload, export, and manage WordPress themes."
+---
+
+## GET /themes
+
+Returns all installed themes. The active theme is listed first; remaining themes are sorted alphabetically.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/themes \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="themes" type="array">
+  Array of theme objects.
+  <Expandable title="item properties">
+    <ResponseField name="slug" type="string">Theme directory name (e.g. `twentytwentyfour`).</ResponseField>
+    <ResponseField name="name" type="string">Theme display name.</ResponseField>
+    <ResponseField name="version" type="string">Installed version string.</ResponseField>
+    <ResponseField name="description" type="string">Theme description.</ResponseField>
+    <ResponseField name="author" type="string">Author name.</ResponseField>
+    <ResponseField name="screenshot" type="string">URL to the theme screenshot image.</ResponseField>
+    <ResponseField name="active" type="boolean">Whether this is the currently active theme.</ResponseField>
+    <ResponseField name="is_child" type="boolean">Whether this is a child theme.</ResponseField>
+    <ResponseField name="parent" type="string | null">Parent theme name if this is a child theme, otherwise `null`.</ResponseField>
+    <ResponseField name="has_update" type="boolean">Whether a newer version is available on WordPress.org.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="total" type="integer">Total number of installed themes.</ResponseField>
+
+---
+
+## POST /themes/activate
+
+Activates an installed theme.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/themes/activate \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "twentytwentyfour"}'
+```
+
+### Parameters
+
+<ParamField path="slug" type="string" required>
+  The theme directory slug.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="message" type="string">Human-readable confirmation message.</ResponseField>
+
+---
+
+## DELETE /themes/delete
+
+Permanently deletes a theme. The currently active theme cannot be deleted.
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/themes/delete \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "twentytwentythree"}'
+```
+
+### Parameters
+
+<ParamField path="slug" type="string" required>
+  The theme directory slug.
+</ParamField>
+
+---
+
+## POST /themes/install
+
+Installs a theme from the WordPress.org repository by slug.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/themes/install \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "astra"}'
+```
+
+### Parameters
+
+<ParamField path="slug" type="string" required>
+  WordPress.org theme slug.
+</ParamField>
+
+---
+
+## GET /themes/search
+
+Searches the WordPress.org theme repository.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/themes/search?q=astra&page=1" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="q" type="string" required>
+  Search query string.
+</ParamField>
+
+<ParamField path="page" type="integer">
+  Page number. Defaults to `1`. Returns 12 results per page.
+</ParamField>
+
+### Response
+
+<ResponseField name="themes" type="array">Array of matching theme objects from WordPress.org.</ResponseField>
+<ResponseField name="total" type="integer">Total number of matching results.</ResponseField>
+
+---
+
+## POST /themes/upload
+
+Installs a theme from an uploaded ZIP file.
+
+<Note>
+  This endpoint requires `multipart/form-data` encoding. The file field must be named `file` and contain a valid `.zip` archive.
+</Note>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/themes/upload \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -F "file=@/path/to/my-theme.zip" \
+  -F "overwrite=1"
+```
+
+### Parameters
+
+<ParamField path="file" type="file" required>
+  The theme ZIP file to upload. Must have a `.zip` extension.
+</ParamField>
+
+<ParamField path="overwrite" type="boolean">
+  If `true`, overwrites an existing theme with the same slug. Defaults to `false`.
+</ParamField>
+
+---
+
+## POST /themes/export
+
+Creates a ZIP archive of an installed theme and returns a time-limited download URL. The URL expires after 5 minutes.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/themes/export \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "my-child-theme"}'
+```
+
+### Parameters
+
+<ParamField path="slug" type="string" required>
+  The theme directory slug.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="download_url" type="string">Time-limited URL to download the ZIP file. Valid for 5 minutes.</ResponseField>
+<ResponseField name="filename" type="string">Suggested filename for the download.</ResponseField>
+
+---
+
+## GET /themes/download
+
+Streams a previously exported theme ZIP file. Use the `download_url` returned by `POST /themes/export`.
+
+### Parameters
+
+<ParamField path="key" type="string" required>
+  The one-time download key returned from `POST /themes/export`.
+</ParamField>
+
+---
+
+## POST /themes/update
+
+Updates an installed theme to its latest available version from WordPress.org. Returns a `400` error if no update is available.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/themes/update \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "astra"}'
+```
+
+### Parameters
+
+<ParamField path="slug" type="string" required>
+  The theme directory slug.
+</ParamField>
+
+---
+
+## POST /themes/install-version
+
+Installs a specific version of a WordPress.org theme, overwriting any currently installed version.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/themes/install-version \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "astra", "version": "4.3.0"}'
+```
+
+### Parameters
+
+<ParamField path="slug" type="string" required>
+  WordPress.org theme slug.
+</ParamField>
+
+<ParamField path="version" type="string" required>
+  The exact version to install (e.g. `4.3.0`).
+</ParamField>

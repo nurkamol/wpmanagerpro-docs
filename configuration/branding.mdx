@@ -1,0 +1,96 @@
+---
+title: "Branding"
+description: "White-label WP Manager Pro for clients by setting a custom plugin name, admin menu label, and sidebar logo. Changes do not affect file paths or the REST API namespace."
+---
+
+The **Branding** tab inside **Settings** lets agencies and developers present WP Manager Pro to clients under a custom brand name. All three fields are optional — leave any field blank to keep the default value.
+
+<CardGroup cols={3}>
+  <Card title="Plugin Name" icon="tag">
+    Changes the name shown in the plugin's own sidebar header. Defaults to "WP Manager Pro".
+  </Card>
+  <Card title="Admin Menu Label" icon="layout-sidebar">
+    Changes the label in the WordPress left-hand navigation menu. Defaults to "WP Manager".
+  </Card>
+  <Card title="Sidebar Logo URL" icon="image">
+    Replaces the default icon in the plugin's sidebar header with a custom image.
+  </Card>
+</CardGroup>
+
+## Custom Plugin Name
+
+The **Plugin Name** field sets the name displayed in the plugin's own sidebar header at the top of every page. It does not change the name on the WordPress **Plugins** list page.
+
+- **Default value**: WP Manager Pro
+- Leave blank to restore the default.
+- The value is stored in the `wmp_plugin_name` option in `wp_options`.
+
+## Admin Menu Label
+
+The **Admin Menu Label** field controls the text shown in the WordPress left-hand navigation menu — the item your client clicks to open the plugin.
+
+- **Default value**: WP Manager
+- Leave blank to restore the default.
+- The value is stored in the `wmp_menu_label` option in `wp_options`.
+
+<Note>
+  The admin menu is rendered server-side on every page load. After saving a new label, **reload the browser tab** for the updated text to appear in the WordPress sidebar.
+</Note>
+
+## Sidebar Logo URL
+
+The **Sidebar Logo URL** field replaces the plugin's default icon in the sidebar header with a custom image — typically a client or agency logo.
+
+- Recommended size: **28 × 28 px**, transparent PNG or SVG.
+- Click **Select** next to the field to open the native WordPress Media Library picker and choose an image from the media library or upload a new one.
+- If the Media Library is unavailable (some hosting environments), a fallback prompt lets you type a URL directly.
+- Once a URL is entered, a small preview thumbnail appears beneath the field so you can verify the image before saving.
+- The value is stored in the `wmp_logo_url` option in `wp_options`.
+
+<Tip>
+  Use a square, transparent PNG at 28 × 28 px or 56 × 56 px (for HiDPI screens) to get the sharpest result in the sidebar header.
+</Tip>
+
+## What white-labelling does not change
+
+Branding settings only affect what is displayed in the WordPress admin interface. They do not change:
+
+- **Plugin file paths** — the plugin remains at `wp-content/plugins/wp-manager-pro/`.
+- **REST API namespace** — all API routes remain under `wp-manager-pro/v1`.
+- **Database table names** — custom tables (`wp_wmp_snippets`, `wp_wmp_redirects`, etc.) are unchanged.
+- **The WordPress Plugins list** — the plugin's name on the **Plugins** administration page is determined by the plugin file header, not by these settings.
+
+<Warning>
+  Branding settings are stored in `wp_options`. If you deactivate and reactivate the plugin, the saved values are retained and applied automatically.
+</Warning>
+
+## Setting up custom white-label branding
+
+<Steps>
+  <Step title="Open Settings → Branding">
+    Navigate to **Settings** in WP Manager Pro and make sure the **Branding** tab is selected.
+  </Step>
+  <Step title="Enter a custom plugin name">
+    Type your agency or client brand name in the **Plugin Name** field. This is what appears in the plugin's own sidebar header.
+  </Step>
+  <Step title="Set the admin menu label">
+    Type the sidebar menu text in the **Admin Menu Label** field. Keep it short — long labels can be truncated in a collapsed sidebar.
+  </Step>
+  <Step title="Choose a logo">
+    Click **Select** next to the **Sidebar Logo URL** field to open the WordPress Media Library. Select an existing image or upload a new one, then click **Use this image**. The URL is populated automatically and a preview appears beneath the field.
+  </Step>
+  <Step title="Save the settings">
+    Click **Save Settings**. A success toast confirms the changes have been written to the database.
+  </Step>
+  <Step title="Reload the page">
+    Reload the browser tab. The new plugin name, menu label, and logo are now visible throughout the WordPress admin.
+  </Step>
+</Steps>
+
+## Presenting the plugin to clients
+
+When delivering a site to a client, set the **Admin Menu Label** to a name that matches your agency brand (for example, "Site Manager" or "Admin Tools"). Upload your agency logo as the **Sidebar Logo URL**. From the client's perspective, the plugin appears as part of your branded service rather than as a third-party tool.
+
+<Info>
+  For deeper client-facing customisation — including a branded login page, hiding admin menu items from non-admin users, and generating client reports — see [Agency Tools](/features/agency-tools) and [White-label](/features/white-label).
+</Info>

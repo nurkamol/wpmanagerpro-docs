@@ -1,0 +1,70 @@
+---
+title: "Agency tools"
+description: "Client delivery, white-labelling, and professional workflow tools for WordPress agencies. Added in v2.8.0."
+---
+
+**Agency Tools** is a five-tab page containing tools for delivering professional WordPress sites to clients: a mail interceptor, white-label login page, admin UI customiser, client report generator, and a coming soon mode.
+
+<Info>
+  Agency Tools was added in **v2.8.0**.
+</Info>
+
+## Sub-tools at a glance
+
+<CardGroup cols={2}>
+  <Card title="Mail interceptor" icon="envelope" href="/features/agency-tools#mail-interceptor-tab">
+    Log every `wp_mail()` call. Enable Dev Mode to prevent real email delivery during development.
+  </Card>
+  <Card title="White-label login page" icon="shield" href="/features/white-label">
+    Replace the default WordPress login page with your client's branding: custom logo, background, button colour, heading, and footer.
+  </Card>
+  <Card title="Admin UI customiser" icon="layout-dashboard" href="/features/white-label#admin-ui-customiser">
+    Hide any WP admin menu item or dashboard widget for non-administrator roles.
+  </Card>
+  <Card title="Client reports" icon="file-bar-chart-2" href="/features/client-reports">
+    Generate a one-click standalone HTML report covering site health, versions, SSL, pending updates, and active plugins.
+  </Card>
+  <Card title="Coming soon mode" icon="rocket" href="/features/client-reports#coming-soon-mode">
+    Show a branded pre-launch page to visitors while you build. Includes a countdown timer and email capture form.
+  </Card>
+</CardGroup>
+
+## Mail interceptor tab
+
+The **Mail Interceptor** hooks into WordPress's `wp_mail()` function and logs every outgoing email before it is sent.
+
+### Dev mode
+
+Enable **Dev Mode** using the toggle in the Mail Interceptor card header. When Dev Mode is on:
+
+- Emails are **intercepted** and not delivered to recipients.
+- The log entry shows a status badge of **Intercepted** instead of **Sent**.
+
+When Dev Mode is off, emails are delivered normally and logged with a **Sent** status.
+
+### Email log
+
+The log table shows each email with:
+
+- Subject line
+- Recipient (`To:`) and timestamp
+- Status badge (**Intercepted** or **Sent**)
+
+Two actions are available per log entry:
+
+- **Preview** — opens a dialog showing the full email body (HTML or plain text).
+- **Resend** — resends the email immediately, regardless of Dev Mode status.
+
+Click **Clear Log** to delete all log entries.
+
+<Note>
+  The Mail Interceptor is separate from the SMTP email log on the [Email & SMTP](/features/email-smtp) page. The Mail Interceptor captures all `wp_mail()` calls regardless of whether custom SMTP is configured.
+</Note>
+
+## White-label and admin UI
+
+Login page customisation and Admin UI Customiser settings are covered in detail on the [White-label](/features/white-label) page.
+
+## Client reports and coming soon
+
+The Client Report Generator and Coming Soon Mode are covered in detail on the [Client reports](/features/client-reports) page.

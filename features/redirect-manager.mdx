@@ -1,0 +1,104 @@
+---
+title: "Redirect manager"
+description: "Manage 301, 302, 307, and 308 URL redirects with hit tracking, wildcard support, and CSV import/export. Added in v1.4.0."
+---
+
+The **Redirect Manager** provides full create/read/update/delete management for URL redirects. Redirects are evaluated on every request before any WordPress template is loaded, making them fast and reliable.
+
+<Info>
+  Redirect Manager was added in **v1.4.0**.
+</Info>
+
+## Redirect types
+
+| Code | Name | Use case |
+|------|------|----------|
+| **301** | Permanent | Page moved permanently — preferred for SEO migrations |
+| **302** | Temporary | Page temporarily at a different URL |
+| **307** | Temporary (method preserved) | Temporary redirect that preserves the HTTP method |
+| **308** | Permanent (method preserved) | Permanent redirect that preserves the HTTP method |
+
+## The redirect list
+
+The main table lists all redirect rules with the following columns:
+
+| Column | Description |
+|--------|-------------|
+| **Source** | The URL path to match (relative, e.g. `/old-page`) |
+| **Target** | The destination URL or path |
+| **Type** | HTTP redirect code with a colour-coded badge |
+| **Hits** | How many times this rule has been triggered |
+
+Hover over a row to reveal the edit (pencil) and delete (trash) icon buttons.
+
+A search box at the top lets you filter by source or target path. Results are paginated at 50 per page.
+
+## Creating a redirect rule
+
+<Steps>
+  <Step title="Click Add Redirect">
+    Click **Add Redirect** in the top-right corner of the Redirect Manager page.
+  </Step>
+  <Step title="Enter the source path">
+    In the **Source URL (path)** field, enter the path to redirect from, e.g. `/old-page` or `/blog/old-post-slug/`.
+  </Step>
+  <Step title="Enter the target URL">
+    In the **Target URL** field, enter the destination. This can be a relative path (e.g. `/new-page`) or a full URL (e.g. `https://example.com/new-page`).
+  </Step>
+  <Step title="Select the redirect type">
+    Choose the redirect type:
+    - **301** — Permanent (SEO-safe)
+    - **302** — Temporary
+    - **307** — Temporary (method preserved)
+  </Step>
+  <Step title="Click Create Redirect">
+    Click **Create Redirect**. The rule appears in the list immediately and begins matching requests.
+  </Step>
+</Steps>
+
+## Wildcard redirects
+
+Source paths support a single wildcard `*` character that matches any substring. Use this to redirect entire URL trees.
+
+### Example: redirect all old blog posts
+
+```text
+Source:  /old-blog/*
+Target:  /blog/
+Type:    301
+```
+
+This rule redirects any path beginning with `/old-blog/` to `/blog/`. For example:
+
+- `/old-blog/my-post` → `/blog/`
+- `/old-blog/category/news/post` → `/blog/`
+
+<Note>
+  Wildcard redirects always redirect to the exact target path. The matched portion of the source is not appended to the destination.
+</Note>
+
+## Hit counter
+
+Each redirect rule has a **Hits** counter that increments each time the rule is matched. Use this to identify high-traffic legacy URLs that need to remain in place, and to confirm that a new redirect is being triggered as expected.
+
+## CSV import and export
+
+### Exporting
+
+Click **Export CSV** to download all current redirect rules as a CSV file. The file can be used as a backup or imported into another site or redirect plugin.
+
+### Importing
+
+Click **Import CSV** and select a CSV file to import. The expected format matches the export format:
+
+```csv
+source,target,type
+/old-page,/new-page,301
+/another-old/*,/archive/,302
+```
+
+Imported rules are added to any existing rules. Duplicate source paths are not automatically deduplicated.
+
+<Tip>
+  Use the CSV import to migrate redirect rules from plugins such as Redirection or Simple 301 Redirects by exporting from those plugins and reformatting to the `source,target,type` CSV structure.
+</Tip>

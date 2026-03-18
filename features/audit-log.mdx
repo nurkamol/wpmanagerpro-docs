@@ -1,0 +1,84 @@
+---
+title: "Audit log"
+description: "Automatic event tracking for plugins, themes, users, and posts — with action filtering, CSV export, and log clearing. Added in v1.4.0."
+---
+
+The **Audit Log** automatically records key events that happen on your WordPress site. No configuration is required — recording starts as soon as WP Manager Pro is activated.
+
+<Info>
+  Audit Log was added in **v1.4.0**.
+</Info>
+
+## What events are tracked
+
+<AccordionGroup>
+  <Accordion title="Plugin events">
+    | Action | Description |
+    |--------|-------------|
+    | `plugin: activated` | A plugin was activated |
+    | `plugin: deactivated` | A plugin was deactivated |
+    | `plugin: deleted` | A plugin was deleted |
+    | `plugin: installed` | A plugin was installed |
+  </Accordion>
+  <Accordion title="Theme events">
+    | Action | Description |
+    |--------|-------------|
+    | `theme: activated` | A theme was activated |
+    | `theme: deleted` | A theme was deleted |
+  </Accordion>
+  <Accordion title="User events">
+    | Action | Description |
+    |--------|-------------|
+    | `user: registered` | A new user registered |
+    | `user: login` | A user logged in |
+    | `user: logout` | A user logged out |
+    | `user: login failed` | A login attempt failed |
+  </Accordion>
+  <Accordion title="Content events">
+    | Action | Description |
+    |--------|-------------|
+    | `content: published` | A post or page was published |
+  </Accordion>
+  <Accordion title="Backup events">
+    | Action | Description |
+    |--------|-------------|
+    | `backup: created` | A database backup was created |
+    | `backup: deleted` | A database backup was deleted |
+  </Accordion>
+</AccordionGroup>
+
+## The log table
+
+Each log entry shows:
+
+| Column | Description |
+|--------|-------------|
+| **Date** | Timestamp of the event |
+| **User** | Username of the WordPress user who triggered the event |
+| **Action** | Colour-coded action badge (e.g. `plugin: activated`, `user: login`) |
+| **Object** | Name of the affected item (e.g. plugin name, username, post title) and its type |
+| **IP Address** | IP address of the request that triggered the event |
+
+Entries are paginated at 50 per page. Use the pagination controls at the bottom of the table to navigate through older entries.
+
+## Filtering by action type
+
+Use the **Filter by action** dropdown at the top of the log to show only entries of a specific action type. The dropdown is populated from the action types that actually exist in your log. Select **All actions** to remove the filter.
+
+Changing the filter resets the page back to page 1.
+
+## Exporting to CSV
+
+Click **Export CSV** to download the current log (with any active filter applied) as a CSV file. The export includes all pages, not just the current page view.
+
+## Clearing the log
+
+Click **Clear Log** to permanently delete all audit log entries. A confirmation dialog requires you to confirm before the deletion proceeds.
+
+<Warning>
+  Clearing the log is permanent. Export to CSV first if you need to retain a record of past events.
+</Warning>
+
+## Refreshing
+
+Click **Refresh** to reload the log data without a full page reload.

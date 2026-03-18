@@ -1,0 +1,48 @@
+---
+title: "Database tools"
+description: "An overview of WP Manager Pro's database utilities: search and replace, table optimization, backups, and prefix management."
+---
+
+WP Manager Pro provides several database tools spread across two pages. This page covers the utilities available within the **Database Manager** page itself. For full SQL backup management, see [Database backup](/features/database-backup).
+
+## Database Manager
+
+The **Database Manager** is the primary database page. It has multiple tabs covering direct table inspection, search and replace, optimization, and more.
+
+See the full [Database Manager](/features/database-manager) documentation for details on:
+
+- Browsing tables and inspecting rows
+- Running queries
+- Viewing table sizes
+
+## Search and replace
+
+The search and replace tool runs a string substitution across all database tables. It correctly handles PHP serialized data — values stored as serialized arrays or objects are unserialized before replacement and re-serialized afterward, preventing broken data.
+
+This is the recommended way to update a domain name or change a URL sitewide (for example, when migrating from `http://` to `https://`, or from a staging URL to production).
+
+<Warning>
+  Always create a database backup before running a search and replace operation. Replacing the wrong string can corrupt post content, widget settings, or option values.
+</Warning>
+
+## Bulk table optimization
+
+The **OPTIMIZE TABLE** operation reclaims storage freed by deleted rows and reduces table fragmentation. Run it periodically on sites with high write activity — particularly on `wp_posts`, `wp_postmeta`, and `wp_options`.
+
+The tool runs `OPTIMIZE TABLE` on all tables in a single operation. The result shows each table name and whether the optimization succeeded.
+
+## Database prefix changer
+
+The database prefix changer is available in the **Developer utilities** page under the **Database Prefix Changer** tab. It renames all tables from the current prefix to a new one and updates `wp-config.php`.
+
+See [Developer utilities](/features/developer-utilities) for the full workflow including the dry-run preview and confirmation requirements.
+
+## Database backup
+
+Database backups are managed on a dedicated page. Backups are stored in `wp-content/wmp-backups/` and can be scheduled to run automatically via WP Cron.
+
+See [Database backup](/features/database-backup) for:
+
+- Creating manual backups
+- Downloading and deleting backups
+- Configuring scheduled backups

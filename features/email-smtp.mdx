@@ -1,0 +1,83 @@
+---
+title: "Email & SMTP"
+description: "Configure custom SMTP delivery for WordPress emails, send a test message to verify your settings, and browse the email delivery log. Added in v1.4.0."
+---
+
+The **Email & SMTP** page has two tabs: **SMTP Settings** for configuring outgoing mail, and **Email Log** for reviewing delivery history.
+
+<Info>
+  Email & SMTP was added in **v1.4.0**.
+</Info>
+
+<Note>
+  If you need to capture and preview emails in a development environment without delivering them, see the **Mail Interceptor** tab in [Agency Tools](/features/agency-tools#mail-interceptor-tab).
+</Note>
+
+## SMTP settings tab
+
+### Enable custom SMTP
+
+The **Enable Custom SMTP** toggle at the top overrides WordPress's default `wp_mail()` behaviour. When disabled, WordPress uses the server's default PHP `mail()` function. Enable it to use the SMTP settings below.
+
+### Configuration fields
+
+| Field | Description |
+|-------|-------------|
+| **SMTP Host** | Hostname of your SMTP server, e.g. `smtp.gmail.com` |
+| **Port** | SMTP port number (default: `587`) |
+| **Encryption** | `TLS` (recommended, port 587), `SSL` (port 465), or `None` (port 25) |
+| **Username** | Your SMTP account username, typically your email address |
+| **Password** | Your SMTP account password or app-specific password |
+| **From Email** | The `From:` email address on all outgoing mail, e.g. `noreply@yourdomain.com` |
+| **From Name** | The `From:` display name on all outgoing mail, e.g. `My Website` |
+
+All fields are disabled when the **Enable Custom SMTP** toggle is off.
+
+### Saving settings
+
+Click **Save Settings** to persist your SMTP configuration.
+
+### Sending a test email
+
+<Steps>
+  <Step title="Save your SMTP settings first">
+    Click **Save Settings** to make sure the latest configuration is stored before testing.
+  </Step>
+  <Step title="Click Send Test Email">
+    Click the **Send Test Email** button (available only when Custom SMTP is enabled).
+  </Step>
+  <Step title="Enter a recipient address">
+    Enter the email address you want the test message delivered to.
+  </Step>
+  <Step title="Click Send Test">
+    Click **Send Test**. A success toast confirms the email was sent. If delivery fails, an error message is shown.
+  </Step>
+  <Step title="Check your inbox">
+    Verify the test email arrived in the recipient's inbox. If it didn’t arrive, check your spam folder and review the **Email Log** tab for error details.
+  </Step>
+</Steps>
+
+## Email log tab
+
+The **Email Log** records every email sent (or attempted) by WordPress through `wp_mail()` when custom SMTP is active.
+
+### Log columns
+
+| Column | Description |
+|--------|-------------|
+| **Date** | Timestamp of the send attempt |
+| **To** | Recipient email address |
+| **Subject** | Email subject line |
+| **Status** | **Sent** (green) or **Failed** (red) |
+
+Hover over a **Failed** status badge to see the error message.
+
+Results are paginated at 50 entries per page.
+
+### Clearing the log
+
+Click **Clear Log** to permanently delete all log entries. A confirmation dialog prevents accidental clearing.
+
+<Tip>
+  Check the **Email Log** tab first when diagnosing email delivery issues. The error message in a **Failed** entry often pinpoints the problem — for example, an authentication failure or an unreachable SMTP host.
+</Tip>

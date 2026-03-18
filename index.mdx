@@ -1,0 +1,92 @@
+---
+title: "WP Manager Pro"
+description: "Agency-ready WordPress management suite — plugin manager, theme manager, file manager, database tools, user manager, maintenance mode, debug tools, image optimizer, and more."
+---
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Install the plugin and launch your React-powered WordPress control panel in minutes.
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Install from ZIP, from WordPress.org, or build from source.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api/overview">
+    Full REST API reference for the `wp-manager-pro/v1` namespace.
+  </Card>
+  <Card title="Security Suite" icon="shield" href="/features/security-overview">
+    Admin URL protection, login limiter, IP blocklist, 2FA, and integrity checks.
+  </Card>
+</CardGroup>
+
+## What is WP Manager Pro?
+
+**WP Manager Pro** is a single WordPress plugin that replaces the need for a dozen separate admin tools. After installing and activating it, a full React-powered control panel appears under the **WP Manager** menu in WP Admin — giving you unified management of every critical aspect of your WordPress site.
+
+All operations run through a secured REST API (`wp-manager-pro/v1`) that requires the `manage_options` capability. Built with **React 19**, **TypeScript**, and **Tailwind CSS**, the UI is fast, responsive, and works inside the standard WordPress admin shell.
+
+## Core capabilities
+
+<CardGroup cols={3}>
+  <Card title="Plugin Manager" icon="puzzle-piece" href="/features/plugin-manager">
+    Install, activate, update, and export plugins. Browse WordPress.org and install any version.
+  </Card>
+  <Card title="Theme Manager" icon="palette" href="/features/theme-manager">
+    Manage all installed themes, activate, update, install from WP.org, and export ZIPs.
+  </Card>
+  <Card title="File Manager" icon="folder-open" href="/features/file-manager">
+    Full filesystem browser with Monaco Editor (VS Code engine) for in-browser code editing.
+  </Card>
+  <Card title="Database Manager" icon="database" href="/features/database-manager">
+    Browse tables, edit rows, run safe SQL queries, search & replace, and export SQL dumps.
+  </Card>
+  <Card title="User Manager" icon="users" href="/features/user-manager">
+    Manage users, change roles, rename logins, and use admin impersonation (Login As).
+  </Card>
+  <Card title="Security Suite" icon="lock" href="/features/security-overview">
+    Five-tab security suite covering login, hardening, integrity, 2FA, and vulnerability scanning.
+  </Card>
+  <Card title="Image Tools" icon="image" href="/features/image-tools">
+    WebP/AVIF conversion, batch processing, thumbnail regeneration, and SVG support.
+  </Card>
+  <Card title="Maintenance Mode" icon="wrench" href="/features/maintenance-mode">
+    Styled maintenance page with gradient presets, countdown timer, and live preview.
+  </Card>
+  <Card title="Agency Tools" icon="building" href="/features/agency-tools">
+    Mail interceptor, white-label login, admin UI customiser, client reports, and coming soon mode.
+  </Card>
+  <Card title="Developer Utilities" icon="terminal" href="/features/developer-utilities">
+    Hook explorer, REST API tester, dummy data generator, object cache browser, and more.
+  </Card>
+  <Card title="Cron Manager" icon="clock" href="/features/cron-manager">
+    View, trigger, and manage WordPress cron events and custom schedules.
+  </Card>
+  <Card title="Code Snippets" icon="code" href="/features/code-snippets">
+    Run custom PHP, CSS, and JavaScript from the dashboard using Monaco Editor.
+  </Card>
+</CardGroup>
+
+## Requirements
+
+| Requirement | Minimum |
+|-------------|---------|
+| WordPress | 5.9+ |
+| PHP | 7.4+ |
+| MySQL / MariaDB | 5.6+ |
+| Browser | Modern (ES2020+) |
+
+<Note>
+  All REST endpoints require the `manage_options` capability. Lower-privileged users receive a `403 Forbidden` response. Every request must include a valid WordPress nonce in the `X-WP-Nonce` header.
+</Note>
+
+## Tech stack
+
+WP Manager Pro is built with a modern frontend atop the WordPress REST API:
+
+- **React 19** — UI framework
+- **TypeScript 5.7** — type safety throughout
+- **Vite 6** — fast build tooling
+- **Tailwind CSS 3.4** — utility-first styling
+- **shadcn/ui** — component library (Radix UI primitives)
+- **TanStack Query v5** — server state and caching
+- **Monaco Editor** — VS Code engine for file editing and code snippets
+- **PHP 7.4+** — REST API backend via WordPress REST API namespace `wp-manager-pro/v1`

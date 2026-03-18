@@ -1,0 +1,136 @@
+---
+title: "Update manager"
+description: "Centralized update dashboard for plugins, themes, and WordPress core with rollback support and scheduled updates. Added in v2.6.0."
+---
+
+The **Update Manager** provides a single page for updating plugins, themes, and WordPress core — with pre-update backups, a full history log, and the ability to schedule or roll back updates.
+
+<Info>
+  Update Manager was added in **v2.6.0**.
+</Info>
+
+## Overview
+
+The Update Manager has three tabs:
+
+| Tab | Description |
+|-----|-------------|
+| **Available** | Lists all pending updates for plugins, themes, and WordPress core |
+| **History** | Log of every update run through this interface, with rollback support |
+| **Scheduled** | Schedule updates to run automatically at a specified date and time |
+
+## Available updates tab
+
+The **Available** tab shows every item with a pending update. Each row displays:
+
+- **Name** — plugin, theme, or core name
+- **Type** badge — Plugin (blue), Theme (purple), or Core (orange)
+- **Current version** — the installed version
+- **New version** — the version available from WordPress.org
+- **Changelog link** — opens the WordPress.org changelog page
+
+### Refreshing the update list
+
+Click **Check for Updates** (top-right) to force WordPress to re-query WordPress.org for fresh update data immediately, without waiting for the scheduled cron check.
+
+### Running an update
+
+<Steps>
+  <Step title="Find the item to update">
+    Locate the plugin, theme, or core update in the list.
+  </Step>
+  <Step title="Click Update">
+    Click the **Update** button on the row. The button shows a spinner while the update runs.
+  </Step>
+  <Step title="Monitor status">
+    The row status icon changes to reflect the result:
+    - Green checkmark — update succeeded.
+    - Red X — update failed (hover for error detail).
+  </Step>
+</Steps>
+
+<Note>
+  Pre-update backups are stored in `wp-content/wmp-backups/updates/` and are used for rollback. The directory is protected with `.htaccess` to block HTTP access.
+</Note>
+
+### Bulk updating
+
+Select multiple items using the checkboxes and click **Update Selected** to run all chosen updates sequentially.
+
+## History tab
+
+The **History** tab shows every update that was run through Update Manager, including the version it came from and went to, the date, and its final status.
+
+Each history entry shows:
+
+| Column | Description |
+|--------|-------------|
+| Name | Plugin, theme, or core name |
+| Type | Plugin, Theme, or Core |
+| From → To | Version transition (e.g. `1.2.0 → 1.3.0`) |
+| Date | Timestamp of the update |
+| Status | `Done`, `Failed`, or `Rolled back` |
+| Has backup | Whether a backup ZIP was captured before the update |
+
+### Rolling back an update
+
+If an update caused a problem, you can revert to the previous version:
+
+<Steps>
+  <Step title="Find the history entry">
+    Locate the update you want to undo in the History tab. It must show **Has backup** to be rollback-eligible.
+  </Step>
+  <Step title="Click Rollback">
+    Click the **Rollback** (undo) icon on the row. A confirmation dialog appears showing the from/to versions.
+  </Step>
+  <Step title="Confirm">
+    Confirm the rollback. The backup ZIP is used to restore the previous version. The history entry status changes to **Rolled back**.
+  </Step>
+</Steps>
+
+<Warning>
+  Rollback reinstalls the backed-up version of the plugin or theme. If the plugin has run database migrations since the update, rolling back may leave the database schema out of sync with the older code. Test rollbacks on staging before using them in production.
+</Warning>
+
+### Clearing history
+
+Click **Clear History** to remove all history entries. This does not delete backup files.
+
+## Scheduled updates tab
+
+The **Scheduled** tab lets you queue an update to run automatically at a specific date and time via WP Cron.
+
+### Creating a scheduled update
+
+<Steps>
+  <Step title="Select item type">
+    Choose **Plugin**, **Theme**, or **Core** from the type dropdown.
+  </Step>
+  <Step title="Select the item">
+    The item selector populates based on the type. For plugins, choose from the list of plugins that have available updates. For themes, choose from themes with updates. For core, the WordPress core entry appears.
+  </Step>
+  <Step title="Set the date and time">
+    Pick the date and time you want the update to run using the datetime input.
+  </Step>
+  <Step title="Schedule">
+    Click **Schedule Update**. The job is registered as a WP Cron event with the `wmp_run_scheduled_update` action.
+  </Step>
+</Steps>
+
+### Viewing and cancelling scheduled jobs
+
+Scheduled jobs appear in a table showing:
+
+| Column | Description |
+|--------|-------------|
+| Name | Item name |
+| Type | Plugin, Theme, or Core |
+| Scheduled for | Human-readable date/time of the planned update |
+| Status | `pending` or `running` |
+| Next run | Next WP Cron fire time |
+
+Click the **Cancel** (X) button on any row to unschedule the job.
+
+<Tip>
+  Schedule core WordPress updates for off-peak hours (e.g. 3 AM) to minimise disruption. Make sure WP Cron is firing reliably — check the **Cron Manager → Health** tab to verify.
+</Tip>

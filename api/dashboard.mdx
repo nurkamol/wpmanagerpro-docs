@@ -1,0 +1,165 @@
+---
+title: "Dashboard API"
+description: "Retrieve site statistics, health information, system details, and recent activity."
+---
+
+## GET /dashboard
+
+Returns a comprehensive snapshot of the site, including post/page/plugin/theme/user counts, pending update counts, PHP and database system info, disk usage, and the five most recently published posts.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/dashboard \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="site" type="object">
+  Core WordPress and server information.
+  <Expandable title="properties">
+    <ResponseField name="name" type="string">
+      The site name from **Settings > General**.
+    </ResponseField>
+    <ResponseField name="url" type="string">
+      The site URL.
+    </ResponseField>
+    <ResponseField name="wp" type="string">
+      The installed WordPress version (e.g. `6.5.2`).
+    </ResponseField>
+    <ResponseField name="php" type="string">
+      The PHP version running on the server.
+    </ResponseField>
+    <ResponseField name="debug" type="boolean">
+      Whether `WP_DEBUG` is currently `true`.
+    </ResponseField>
+    <ResponseField name="maintenance" type="boolean">
+      Whether a `.maintenance` file is present in `ABSPATH`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="counts" type="object">
+  Published content and installed asset counts.
+  <Expandable title="properties">
+    <ResponseField name="posts" type="integer">
+      Number of published posts.
+    </ResponseField>
+    <ResponseField name="pages" type="integer">
+      Number of published pages.
+    </ResponseField>
+    <ResponseField name="plugins" type="integer">
+      Total number of installed plugins.
+    </ResponseField>
+    <ResponseField name="active_plugins" type="integer">
+      Number of currently active plugins.
+    </ResponseField>
+    <ResponseField name="themes" type="integer">
+      Total number of installed themes.
+    </ResponseField>
+    <ResponseField name="users" type="integer">
+      Total registered user count.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="updates" type="object">
+  Pending update counts.
+  <Expandable title="properties">
+    <ResponseField name="plugins" type="integer">
+      Number of plugins with available updates.
+    </ResponseField>
+    <ResponseField name="themes" type="integer">
+      Number of themes with available updates.
+    </ResponseField>
+    <ResponseField name="core" type="string | boolean">
+      The available WordPress core version string, or `false` if up to date.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="system" type="object">
+  PHP configuration and storage details.
+  <Expandable title="properties">
+    <ResponseField name="memory_limit" type="string">
+      PHP `memory_limit` directive value (e.g. `256M`).
+    </ResponseField>
+    <ResponseField name="upload_max" type="string">
+      PHP `upload_max_filesize` directive value.
+    </ResponseField>
+    <ResponseField name="max_exec_time" type="string">
+      PHP `max_execution_time` directive value in seconds.
+    </ResponseField>
+    <ResponseField name="db_size" type="number">
+      Total database size in megabytes (rounded to two decimal places).
+    </ResponseField>
+    <ResponseField name="uploads_size" type="string">
+      Human-readable size of the `wp-content/uploads` directory (e.g. `128.45 MB`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="active_theme" type="string">
+  Name of the currently active theme.
+</ResponseField>
+
+<ResponseField name="recent_posts" type="array">
+  The five most recently published posts.
+  <Expandable title="item properties">
+    <ResponseField name="id" type="integer">
+      Post ID.
+    </ResponseField>
+    <ResponseField name="title" type="string">
+      Post title.
+    </ResponseField>
+    <ResponseField name="date" type="string">
+      Publication date in `Y-m-d H:i:s` format.
+    </ResponseField>
+    <ResponseField name="url" type="string">
+      Permalink URL of the post.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example response
+
+```json
+{
+  "site": {
+    "name": "My WordPress Site",
+    "url": "https://example.com",
+    "wp": "6.5.2",
+    "php": "8.2.10",
+    "debug": false,
+    "maintenance": false
+  },
+  "counts": {
+    "posts": 42,
+    "pages": 8,
+    "plugins": 15,
+    "active_plugins": 12,
+    "themes": 3,
+    "users": 5
+  },
+  "updates": {
+    "plugins": 2,
+    "themes": 0,
+    "core": false
+  },
+  "system": {
+    "memory_limit": "256M",
+    "upload_max": "64M",
+    "max_exec_time": "300",
+    "db_size": 14.82,
+    "uploads_size": "512.00 MB"
+  },
+  "active_theme": "Twenty Twenty-Four",
+  "recent_posts": [
+    {
+      "id": 101,
+      "title": "Hello World",
+      "date": "2026-03-15 10:00:00",
+      "url": "https://example.com/hello-world/"
+    }
+  ]
+}
+```

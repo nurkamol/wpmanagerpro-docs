@@ -1,0 +1,107 @@
+---
+title: "Dev tools"
+description: "wp-config.php editor, .htaccess editor, PHP info viewer, query monitor, and environment variable inspector. Added in v2.4.0."
+---
+
+**Dev Tools** is a five-tab page for inspecting and editing core WordPress configuration files directly from the admin dashboard. It provides structured views into `wp-config.php`, `.htaccess`, PHP runtime info, database queries, and environment variables.
+
+<Info>
+  Dev Tools was added in **v2.4.0**.
+</Info>
+
+<Warning>
+  Dev Tools exposes and modifies critical server configuration files. Use it with care in production environments. Always have a recent backup before editing `wp-config.php` or `.htaccess`.
+</Warning>
+
+## wp-config.php tab
+
+The **wp-config.php** tab reads all `define()` constants from your `wp-config.php` file, groups them by category, and lets you edit or add constants without touching the file directly.
+
+### Constant groups
+
+Constants are organized into six groups:
+
+| Group | Constants |
+|-------|-----------|
+| **database** | `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_CHARSET`, `DB_COLLATE` |
+| **debug** | `WP_DEBUG`, `WP_DEBUG_LOG`, `WP_DEBUG_DISPLAY`, `SCRIPT_DEBUG`, `SAVEQUERIES` |
+| **salts** | `AUTH_KEY`, `SECURE_AUTH_KEY`, `LOGGED_IN_KEY`, `NONCE_KEY`, and the four `_SALT` variants |
+| **urls** | `WP_HOME`, `WP_SITEURL` |
+| **memory** | `WP_MEMORY_LIMIT`, `WP_MAX_MEMORY_LIMIT`, `WP_CACHE`, `WP_LANG` |
+| **custom** | All other `define()` calls not in the groups above |
+
+Salt values are masked in the UI (showing only the first and last four characters) to prevent accidental exposure.
+
+### Editing a constant
+
+<Steps>
+  <Step title="Find the constant">
+    Expand the relevant group accordion and locate the constant you want to change.
+  </Step>
+  <Step title="Click the edit icon">
+    Click the **pencil** icon on the constant row. An inline editor appears with the current raw value.
+  </Step>
+  <Step title="Update the value">
+    Enter the new value. The editor accepts raw PHP values — strings should be quoted, booleans use `true`/`false`, integers are unquoted.
+  </Step>
+  <Step title="Save">
+    Click **Save**. The `wp-config.php` file is updated in place. The file must be writable by the web server.
+  </Step>
+</Steps>
+
+<Note>
+  A `writable` indicator at the top of the tab shows whether `wp-config.php` can be written. If it is not writable, changes cannot be saved via this interface.
+</Note>
+
+## .htaccess tab
+
+The **.htaccess** tab shows the full content of the root `.htaccess` file in a Monaco Editor (VS Code engine) with Apache syntax highlighting.
+
+- The file path and size are shown in the header.
+- A `writable` badge indicates whether the file can be saved.
+- Edit the content directly in the editor and click **Save** to write changes to disk.
+
+<Warning>
+  An invalid `.htaccess` file can make your entire site return a `500 Internal Server Error`. Test changes on a staging environment first.
+</Warning>
+
+## PHP info tab
+
+The **PHP Info** tab renders `phpinfo()` output as a structured table, grouped by PHP extension and configuration section. Each section is collapsible.
+
+Columns shown for each directive:
+
+| Column | Description |
+|--------|-------------|
+| Directive | The PHP INI setting name |
+| Local value | The value effective for the current request |
+| Master value | The value from the global `php.ini` |
+
+The PHP version is shown at the top of the page.
+
+## Query monitor tab
+
+The **Query Monitor** tab displays all database queries executed during the current page load. It requires `SAVEQUERIES` to be set to `true` in `wp-config.php`.
+
+Each query row shows:
+
+| Column | Description |
+|--------|-------------|
+| SQL | The full query string |
+| Time | Execution time in milliseconds |
+| Caller | The PHP function/method that triggered the query |
+| Slow | Highlighted in amber if the query took longer than 0.05 seconds |
+
+<Tip>
+  Enable `SAVEQUERIES` temporarily using the [Debug Tools](/features/debug-tools) page, run the Query Monitor, then disable it again. Leaving `SAVEQUERIES` on in production adds overhead to every page load.
+</Tip>
+
+## Environment tab
+
+The **Environment** tab shows all environment variables available to PHP via `$_SERVER` and `getenv()`, as well as any custom environment variables set in your server configuration.
+
+Variables are shown as a searchable key-value table. Sensitive values (passwords, keys) are not automatically redacted — treat this tab's output as sensitive.
+
+### Editing environment variables
+
+If your server configuration supports it (e.g., via `.htaccess` `SetEnv` or `wp-config.php` `putenv()`), you can use this tab to view the current state. Direct editing of system environment variables is not supported; use your server's configuration mechanism instead.

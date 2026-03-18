@@ -1,0 +1,104 @@
+---
+title: "Plugin Manager"
+description: "Install, activate, update, roll back, and export WordPress plugins — including direct search and install from WordPress.org."
+---
+
+The **Plugin Manager** gives you full control over every plugin on your site from a single tabbed interface. It is split into three tabs: **Installed**, **Search & Install**, and **Upload ZIP**.
+
+## Installed plugins
+
+The **Installed** tab lists all plugins in two groups: **Active** and **Inactive**. Each row shows the plugin name, version, author, a truncated description, and any pending badges.
+
+For each plugin you can:
+
+- **Activate / Deactivate** — toggle the plugin's active state with instant feedback
+- **Update** — one-click update button appears on any plugin with a pending update (amber badge)
+- **Version History** — open the version history dialog to install any older or newer version from WordPress.org
+- **Export as ZIP** — download the plugin's current files as a `.zip` archive
+- **Delete** — permanently remove the plugin from the server
+
+You can filter the list by typing in the **Search plugins** field, which matches against both the plugin name and author.
+
+### Bulk actions
+
+Select one or more plugins using the checkboxes on the left of each row (or the group-level checkbox to select all active or all inactive at once). A toolbar appears at the top with the following bulk actions:
+
+- **Activate** — activates all selected inactive plugins
+- **Deactivate** — deactivates all selected active plugins
+- **Update** — updates all selected plugins that have available updates
+- **Delete** — permanently deletes all selected plugins after a confirmation dialog
+
+<Warning>
+  Deleting a plugin automatically deactivates it first. The deletion is permanent and cannot be undone. WP Manager Pro itself is excluded from all delete and deactivate operations.
+</Warning>
+
+## Installing a plugin from WordPress.org
+
+<Steps>
+  <Step title="Open the Search & Install tab">
+    Click the **Search & Install** tab at the top of the Plugin Manager page.
+  </Step>
+  <Step title="Enter a search term">
+    Type a plugin name or keyword into the search field and press **Enter** or click the **Search** button. Results are fetched directly from the WordPress.org plugins API and display up to 12 plugins with icons, star ratings, and descriptions.
+  </Step>
+  <Step title="Install the plugin">
+    Click **Install** on the plugin card. The button changes to a spinner while the server downloads and installs the plugin. Once complete, the button changes to **Installed** (grayed out) if the plugin is already installed and up to date, or to **Update** if a newer version is available.
+  </Step>
+</Steps>
+
+<Tip>
+  Use the **Check Updates** button in the top-right corner of the Plugin Manager to force WordPress to re-fetch update data from WordPress.org immediately. This deletes the cached `update_plugins` transient and contacts WordPress.org, so the update badges on installed plugins are always current.
+</Tip>
+
+## Rolling back a plugin to a previous version
+
+<Steps>
+  <Step title="Open version history">
+    On any installed plugin row, click the **History** icon (clock icon) to open the **Version History** dialog. The dialog shows the plugin's current installed version and fetches the full version list from WordPress.org.
+  </Step>
+  <Step title="Select a version">
+    The version list is sorted newest-first. The currently installed version is highlighted with a **Current** badge. Click **Install** next to any other version.
+  </Step>
+  <Step title="Confirm the install">
+    The selected version is downloaded from `downloads.wordpress.org` and installed over the existing files. If the plugin was active before the rollback it is automatically re-activated after the installation completes.
+  </Step>
+</Steps>
+
+<Note>
+  Version history is only available for plugins that are hosted on WordPress.org. Commercially distributed or privately uploaded plugins will show "No version history available" in the dialog.
+</Note>
+
+## Uploading a plugin ZIP
+
+<Steps>
+  <Step title="Open the Upload ZIP tab">
+    Click the **Upload ZIP** tab.
+  </Step>
+  <Step title="Add files to the queue">
+    Drag and drop one or more `.zip` files onto the drop zone, or click the drop zone to open a file picker. Multiple files are supported. Each file appears in a queue with a **Pending** status.
+  </Step>
+  <Step title="(Optional) Enable overwrite">
+    Check **Overwrite if exists** if you want to replace plugin files that are already installed. Leave it unchecked to skip files with conflicting names.
+  </Step>
+  <Step title="Install">
+    Click the **Install** button. Each file in the queue is uploaded and installed sequentially. The status column updates to **Installing…**, then **Done** or **Error** for each file.
+  </Step>
+</Steps>
+
+## Exporting a plugin as ZIP
+
+<Steps>
+  <Step title="Find the plugin">
+    Locate the plugin on the **Installed** tab.
+  </Step>
+  <Step title="Click the download icon">
+    Click the **Download** (arrow-down) icon on the plugin row.
+  </Step>
+  <Step title="Save the file">
+    The browser downloads a `.zip` file named `{plugin-slug}-{version}.zip` containing the complete plugin directory.
+  </Step>
+</Steps>
+
+<Note>
+  The export feature requires the PHP `ZipArchive` extension. If your server does not have it, the export button returns an error.
+</Note>

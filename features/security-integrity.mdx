@@ -1,0 +1,61 @@
+---
+title: "Core file integrity"
+description: "Verify that every WordPress core file matches the official MD5 checksums published by wordpress.org."
+---
+
+The **Integrity** tab compares your installed core files against the authoritative checksums published by WordPress.org. Any file that has been modified or deleted since installation is flagged immediately.
+
+## How it works
+
+1. WP Manager Pro calls `https://api.wordpress.org/core/checksums/1.0/` with your WordPress version and locale as parameters.
+2. WordPress.org returns a map of every core file path to its expected MD5 hash.
+3. Every file in `wp-admin/` and `wp-includes/` is read and its MD5 hash is computed locally.
+4. The actual hash is compared against the expected hash. Files whose hashes differ are reported as **modified**. Files listed in the checksums that do not exist on disk are reported as **missing**.
+
+`wp-content/` is excluded from the check because it holds user content (themes, plugins, uploads) that is legitimately different from a vanilla install.
+
+<Note>
+  A clean WordPress installation should produce zero findings. If you see modified files on a site you have not touched, investigate promptly.
+</Note>
+
+## Running an integrity check
+
+<Steps>
+  <Step title="Open the Integrity tab">
+    Navigate to **Security** and click the **Integrity** tab.
+  </Step>
+  <Step title="Click Run Integrity Check">
+    Click **Run Integrity Check**. WP Manager Pro fetches the checksums from wordpress.org and scans your files. This typically takes a few seconds.
+  </Step>
+  <Step title="Review the results">
+    The results banner shows the total number of files checked, how many are clean, and counts of modified and missing files.
+
+    - A green banner with a checkmark means all files are clean.
+    - A red banner with a warning icon means issues were found.
+  </Step>
+</Steps>
+
+## Understanding the results
+
+### Modified files
+
+Modified files are listed with:
+
+- **Path** — the file path relative to your WordPress root (e.g. `wp-includes/version.php`)
+- **Last modified** — the filesystem modification timestamp of the file
+
+<Warning>
+  Modified core files can indicate a compromised installation. Compare the actual file content against the official WordPress release package and restore clean copies if you find unexpected changes.
+</Warning>
+
+### Missing files
+
+Missing files are core files that exist in the official checksums but are absent from your installation. A small number of missing files is sometimes normal (for example, files removed in a partial update), but a large count alongside modified files should be treated as a security incident.
+
+## What to do if issues are found
+
+1. **Do not panic** — some modifications are benign (e.g. a hosting provider that patches `wp-config.php`).
+2. Download the matching version of WordPress from [wordpress.org/download/releases](https://wordpress.org/download/releases/) and compare each flagged file against the original.
+3. If a file has been tampered with, replace it with the clean copy from the official release archive.
+4. After replacing files, run **Run Integrity Check** again to confirm the result is clean.
+5. If you cannot account for the modifications, consider engaging a security professional and changing all credentials.

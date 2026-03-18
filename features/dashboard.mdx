@@ -1,0 +1,106 @@
+---
+title: "Dashboard"
+description: "Real-time overview of your site's health, resource usage, and key counts — all on one screen."
+---
+
+The **Dashboard** is the first screen you see after opening WP Manager Pro. It fetches live data from the WordPress REST API on every page load and also auto-refreshes every 30 seconds. You can trigger an immediate refresh at any time using the **Refresh** button in the top-right corner.
+
+## At-a-glance stats
+
+Six stat cards run across the top of the dashboard:
+
+| Card | What it shows |
+|------|---------------|
+| **Posts** | Total published posts |
+| **Pages** | Total published pages |
+| **Plugins** | Active plugins out of total installed (e.g. `4/12`) — badge shows pending updates |
+| **Themes** | Total installed themes — badge shows pending updates |
+| **Users** | Total registered users |
+| **DB Size** | Current database size in MB |
+
+Clicking the **Plugins**, **Themes**, **Users**, or **DB Size** cards navigates directly to the corresponding management page.
+
+## Site status panel
+
+The **Site Status** card shows the current values for:
+
+- **WordPress** version
+- **PHP** version
+- **Active Theme** name
+- **Debug Mode** — flagged with a warning indicator when `WP_DEBUG` is enabled
+- **Maintenance** — flagged when maintenance mode is active
+
+## System resources panel
+
+The **System Resources** card displays the PHP and server environment limits:
+
+- **Memory Limit** — PHP `memory_limit`
+- **Upload Max** — PHP `upload_max_filesize`
+- **Max Exec Time** — PHP `max_execution_time` in seconds
+- **Database Size** — total size of all database tables in MB
+- **Uploads Size** — size of the `wp-content/uploads` folder
+
+## Update alerts
+
+If any updates are available, an alert banner appears above the stat cards listing:
+
+- The number of available WordPress core updates (with the target version)
+- The number of available plugin updates
+- The number of available theme updates
+
+Two additional alerts appear when your site is in a non-production state:
+
+<Warning>
+  A **Maintenance mode is active** warning is shown whenever maintenance mode is enabled. Visitors are currently seeing the maintenance page. Click **Manage →** to open the Maintenance Mode settings.
+</Warning>
+
+<Warning>
+  A **Debug mode is enabled** warning appears when `WP_DEBUG` is `true`. Debug mode should only be used in development environments. Click **Manage →** to open the Debug Tools page.
+</Warning>
+
+## Recent posts
+
+The **Recent Posts** card lists the most recent posts with their titles and relative publish dates. Each entry links directly to the live post URL, opening it in a new tab.
+
+## Quick actions
+
+The **Quick Actions** grid provides one-click navigation to every major section of WP Manager Pro:
+
+<CardGroup cols={3}>
+  <Card title="Manage Plugins" icon="puzzle-piece" href="/features/plugin-manager">
+    Install and manage plugins
+  </Card>
+  <Card title="Manage Themes" icon="palette" href="/features/theme-manager">
+    Install and manage themes
+  </Card>
+  <Card title="File Manager" icon="folder-open" href="/features/file-manager">
+    Browse and edit files
+  </Card>
+  <Card title="Database" icon="database" href="/features/database-manager">
+    Search and replace
+  </Card>
+  <Card title="User Manager" icon="users" href="/features/user-manager">
+    Manage users and roles
+  </Card>
+  <Card title="Code Snippets" icon="code">
+    PHP, CSS, and JS snippets
+  </Card>
+  <Card title="Image Tools" icon="image">
+    WebP, AVIF, and thumbnails
+  </Card>
+  <Card title="Email / SMTP" icon="envelope">
+    Configure and test SMTP
+  </Card>
+  <Card title="Backup" icon="floppy-disk">
+    Database backups
+  </Card>
+  <Card title="Maintenance" icon="wrench">
+    Toggle maintenance mode
+  </Card>
+  <Card title="Debug Tools" icon="bug">
+    WP_DEBUG and error log
+  </Card>
+  <Card title="System Info" icon="server">
+    PHP and server info
+  </Card>
+</CardGroup>

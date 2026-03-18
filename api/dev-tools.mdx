@@ -1,0 +1,206 @@
+---
+title: "Dev Tools API"
+description: "Read and write wp-config.php constants, manage .htaccess, view PHP info, monitor database queries, and inspect environment variables."
+---
+
+<Note>
+  Dev Tools API endpoints were added in **v2.4.0**.
+</Note>
+
+**Base path:** `/wp-json/wp-manager-pro/v1/dev-tools`
+
+All endpoints require `X-WP-Nonce` header with a `wp_rest` nonce and the `manage_options` capability.
+
+---
+
+## GET /dev-tools/wp-config
+
+Returns all parsed `define()` constants from `wp-config.php`, grouped by category.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/dev-tools/wp-config \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="groups" type="object">
+  Object with keys `database`, `debug`, `salts`, `urls`, `memory`, `custom`. Each key contains an array of constant objects.
+  <Expandable title="Constant object">
+    <ResponseField name="name" type="string">Constant name (e.g. `WP_DEBUG`).</ResponseField>
+    <ResponseField name="value" type="string|boolean|integer">Parsed value. Salt values are masked.</ResponseField>
+    <ResponseField name="type" type="string">Detected type: `string`, `bool`, or `int`.</ResponseField>
+    <ResponseField name="raw" type="string">Raw value string from `wp-config.php`.</ResponseField>
+    <ResponseField name="line" type="integer">Line number of the `define()` call in the file.</ResponseField>
+    <ResponseField name="group" type="string">Which group this constant belongs to.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="writable" type="boolean">Whether `wp-config.php` is writable by the web server.</ResponseField>
+<ResponseField name="path" type="string">Resolved file path to `wp-config.php`.</ResponseField>
+<ResponseField name="size" type="integer">File size in bytes.</ResponseField>
+
+---
+
+## POST /dev-tools/wp-config
+
+Update or add a `define()` constant in `wp-config.php`.
+
+<Warning>
+  This endpoint modifies `wp-config.php` directly. Incorrect values (especially for `DB_*` constants) can make your site inaccessible.
+</Warning>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/dev-tools/wp-config \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "WP_DEBUG", "value": "true"}'
+```
+
+### Parameters
+
+<ParamField body="name" type="string" required>
+  Constant name to update or create.
+</ParamField>
+<ParamField body="value" type="string" required>
+  New raw value string. Strings should be quoted (e.g. `"'my-value'"`), booleans unquoted (`true`/`false`).
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /dev-tools/htaccess
+
+Returns the content of the root `.htaccess` file.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/dev-tools/htaccess \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="content" type="string">Full `.htaccess` file content.</ResponseField>
+<ResponseField name="exists" type="boolean">Whether the file exists.</ResponseField>
+<ResponseField name="writable" type="boolean">Whether the file is writable.</ResponseField>
+<ResponseField name="size" type="integer">File size in bytes.</ResponseField>
+<ResponseField name="path" type="string">Resolved file path.</ResponseField>
+
+---
+
+## POST /dev-tools/htaccess
+
+Write new content to `.htaccess`.
+
+<Warning>
+  An invalid `.htaccess` causes a `500 Internal Server Error`. Test changes on staging first.
+</Warning>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/dev-tools/htaccess \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"content": "# BEGIN WordPress\n..."}'
+```
+
+### Parameters
+
+<ParamField body="content" type="string" required>
+  Full new `.htaccess` content to write.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /dev-tools/phpinfo
+
+Returns parsed PHP configuration grouped by extension/module.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/dev-tools/phpinfo \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="sections" type="array">
+  Array of section objects.
+  <Expandable title="Section object">
+    <ResponseField name="title" type="string">Section name (e.g. `Core`, `mysqli`).</ResponseField>
+    <ResponseField name="rows" type="array">
+      Array of directive rows.
+      <Expandable title="Row object">
+        <ResponseField name="directive" type="string">PHP INI directive name.</ResponseField>
+        <ResponseField name="local_value" type="string">Per-request effective value.</ResponseField>
+        <ResponseField name="master_value" type="string">Global `php.ini` value.</ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="php_version" type="string">PHP version string.</ResponseField>
+
+---
+
+## GET /dev-tools/query-monitor
+
+Returns database queries captured during the request. Requires `SAVEQUERIES` to be `true` in `wp-config.php`.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/dev-tools/query-monitor \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+Returns an array of query objects:
+
+<ResponseField name="sql" type="string">The SQL query string.</ResponseField>
+<ResponseField name="time" type="number">Execution time in seconds.</ResponseField>
+<ResponseField name="caller" type="string">PHP function/method that triggered the query.</ResponseField>
+<ResponseField name="slow" type="boolean">`true` if the query took longer than 0.05 seconds.</ResponseField>
+
+---
+
+## GET /dev-tools/environment
+
+Returns server environment variables available via `$_SERVER` and PHP environment.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/dev-tools/environment \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+Returns an object where each key is an environment variable name and the value is its string value.
+
+---
+
+## POST /dev-tools/environment
+
+Update a runtime environment setting (where supported by the server configuration).
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/dev-tools/environment \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"key": "MY_VAR", "value": "my_value"}'
+```
+
+### Parameters
+
+<ParamField body="key" type="string" required>
+  Environment variable name.
+</ParamField>
+<ParamField body="value" type="string" required>
+  New value to set via `putenv()`.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>

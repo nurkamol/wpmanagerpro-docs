@@ -1,0 +1,279 @@
+---
+title: "Content API"
+description: "Manage posts, pages, and wp_options. Bulk edit, duplicate, inspect scheduled posts, and browse the options table."
+---
+
+<Note>
+  Content API endpoints were added in **v2.3.0**.
+</Note>
+
+**Base path:** `/wp-json/wp-manager-pro/v1/content`
+
+All endpoints require `X-WP-Nonce` header with a `wp_rest` nonce and the `manage_options` capability.
+
+---
+
+## GET /content/post-types
+
+Returns all registered public post types.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/content/post-types \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+Returns an array of objects:
+
+<ResponseField name="slug" type="string">Post type slug (e.g. `post`, `page`, `product`).</ResponseField>
+<ResponseField name="label" type="string">Human-readable post type label.</ResponseField>
+
+---
+
+## GET /content/authors
+
+Returns users who have the `edit_posts` capability (up to 200).
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/content/authors \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="id" type="integer">WordPress user ID.</ResponseField>
+<ResponseField name="name" type="string">User display name.</ResponseField>
+
+---
+
+## GET /content/posts
+
+Paginated list of posts with optional filters.
+
+```bash
+curl "https://example.com/wp-json/wp-manager-pro/v1/content/posts?post_type=post&status=publish&per_page=20&page=1" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField query="post_type" type="string">
+  Post type slug. Defaults to `any`.
+</ParamField>
+<ParamField query="status" type="string">
+  Post status filter. Defaults to `any`. Accepted: `publish`, `draft`, `pending`, `private`, `future`, `any`.
+</ParamField>
+<ParamField query="search" type="string">
+  Filter by post title substring.
+</ParamField>
+<ParamField query="per_page" type="integer">
+  Results per page. Min 1, max 100. Defaults to 20.
+</ParamField>
+<ParamField query="page" type="integer">
+  Page number. Defaults to 1.
+</ParamField>
+
+### Response
+
+<ResponseField name="posts" type="array">
+  Array of post objects.
+  <Expandable title="Post object">
+    <ResponseField name="id" type="integer">Post ID.</ResponseField>
+    <ResponseField name="title" type="string">Post title.</ResponseField>
+    <ResponseField name="status" type="string">Post status.</ResponseField>
+    <ResponseField name="post_type" type="string">Post type slug.</ResponseField>
+    <ResponseField name="date" type="string">Post date (ISO 8601).</ResponseField>
+    <ResponseField name="author_id" type="integer">Author user ID.</ResponseField>
+    <ResponseField name="author" type="string">Author display name.</ResponseField>
+    <ResponseField name="categories" type="array">Array of `{id, name}` objects for assigned categories.</ResponseField>
+    <ResponseField name="edit_link" type="string">URL to the WordPress post edit screen.</ResponseField>
+    <ResponseField name="view_link" type="string">URL to the published post.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="total" type="integer">Total number of matching posts.</ResponseField>
+<ResponseField name="total_pages" type="integer">Total pages available.</ResponseField>
+<ResponseField name="page" type="integer">Current page number.</ResponseField>
+
+---
+
+## POST /content/posts/bulk-edit
+
+Bulk-edit status or author for multiple posts.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/content/posts/bulk-edit \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [1, 2, 3], "action": "change_status", "value": "draft"}'
+```
+
+### Parameters
+
+<ParamField body="ids" type="array" required>
+  Array of post IDs to edit.
+</ParamField>
+<ParamField body="action" type="string" required>
+  Action to perform: `change_status` or `change_author`.
+</ParamField>
+<ParamField body="value" type="string" required>
+  New value — a status string (`publish`, `draft`, `pending`, `private`) for `change_status`, or a user ID string for `change_author`.
+</ParamField>
+
+### Response
+
+<ResponseField name="updated" type="integer">Number of posts successfully updated.</ResponseField>
+
+---
+
+## POST /content/posts/duplicate
+
+Duplicate a single post as a draft.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/content/posts/duplicate \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"id": 42}'
+```
+
+### Parameters
+
+<ParamField body="id" type="integer" required>
+  ID of the post to duplicate.
+</ParamField>
+
+### Response
+
+<ResponseField name="new_id" type="integer">ID of the newly created draft.</ResponseField>
+<ResponseField name="edit_link" type="string">URL to the edit screen for the new draft.</ResponseField>
+
+---
+
+## GET /content/scheduled
+
+Returns all posts with a `future` (scheduled) status, sorted by scheduled date.
+
+```bash
+curl https://example.com/wp-json/wp-manager-pro/v1/content/scheduled \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+Returns an array of scheduled post objects:
+
+<ResponseField name="id" type="integer">Post ID.</ResponseField>
+<ResponseField name="title" type="string">Post title.</ResponseField>
+<ResponseField name="post_type" type="string">Post type slug.</ResponseField>
+<ResponseField name="scheduled_fmt" type="string">Formatted scheduled date string.</ResponseField>
+<ResponseField name="scheduled_local" type="string">ISO 8601 scheduled date in local timezone.</ResponseField>
+<ResponseField name="author" type="string">Author display name.</ResponseField>
+<ResponseField name="edit_link" type="string">URL to the WordPress edit screen.</ResponseField>
+<ResponseField name="view_link" type="string">Preview URL.</ResponseField>
+
+---
+
+## GET /content/options
+
+Paginated list of `wp_options` rows.
+
+```bash
+curl "https://example.com/wp-json/wp-manager-pro/v1/content/options?search=woocommerce&per_page=50&page=1" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField query="search" type="string">
+  Filter by `option_name` substring.
+</ParamField>
+<ParamField query="per_page" type="integer">
+  Results per page. Defaults to 50.
+</ParamField>
+<ParamField query="page" type="integer">
+  Page number. Defaults to 1.
+</ParamField>
+
+### Response
+
+<ResponseField name="options" type="array">
+  <Expandable title="Option row">
+    <ResponseField name="option_name" type="string">Option key.</ResponseField>
+    <ResponseField name="option_value" type="string">Truncated option value preview.</ResponseField>
+    <ResponseField name="full_length" type="integer">Full byte length of the option value.</ResponseField>
+    <ResponseField name="autoload" type="string">`yes` or `no`.</ResponseField>
+    <ResponseField name="type" type="string">Detected value type: `string`, `array`, `object`, `bool`, `int`, or `serialized`.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="total" type="integer">Total matching options.</ResponseField>
+<ResponseField name="total_pages" type="integer">Total pages.</ResponseField>
+
+---
+
+## GET /content/options/{name}
+
+Get the full value of a single option by name.
+
+```bash
+curl "https://example.com/wp-json/wp-manager-pro/v1/content/options/blogname" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="option_name" type="string">Option key.</ResponseField>
+<ResponseField name="option_value" type="string">Full option value.</ResponseField>
+
+---
+
+## POST /content/options
+
+Update an existing option.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/content/options \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"option_name": "blogdescription", "option_value": "Just another WordPress site"}'
+```
+
+### Parameters
+
+<ParamField body="option_name" type="string" required>
+  The option key to update.
+</ParamField>
+<ParamField body="option_value" type="string" required>
+  The new option value (as a string; will be stored as-is).
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## DELETE /content/options
+
+Delete an option by name.
+
+<Warning>
+  Deleting WordPress core options can break your site. Only delete custom plugin or theme options.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/content/options \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"option_name": "my_plugin_option"}'
+```
+
+### Parameters
+
+<ParamField body="option_name" type="string" required>
+  The option key to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>

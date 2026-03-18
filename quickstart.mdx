@@ -1,0 +1,72 @@
+---
+title: "Quickstart"
+description: "Go from zero to actively managing your WordPress site with WP Manager Pro in a few minutes."
+---
+
+This guide walks you through installation, your first look at the dashboard, and three common workflows to get you productive fast.
+
+<Steps>
+  <Step title="Install and activate the plugin">
+    Download `wp-manager-pro-v2.9.4.zip` from the [Releases](https://github.com/nurkamol/wp-manager-pro/releases) page. In WP Admin, go to **Plugins → Add New → Upload Plugin**, upload the ZIP, click **Install Now**, then **Activate Plugin**.
+
+    See the [Installation](/installation) page for manual and build-from-source options.
+  </Step>
+
+  <Step title="Navigate to WP Manager">
+    Click **WP Manager** in the WordPress admin sidebar. The full React-powered control panel loads in place — no page reload or separate browser tab required.
+
+    <Tip>
+      You can also click the **Open** link that appears in the plugin row on **Plugins → Installed Plugins**.
+    </Tip>
+  </Step>
+
+  <Step title="Review the dashboard">
+    The **Dashboard** gives you an at-a-glance snapshot of your site's health:
+
+    - **Update alerts** — counts of pending core, plugin, and theme updates
+    - **Active plugin and theme counts**
+    - **PHP limits** — memory limit, max execution time, upload size limit
+    - **Storage** — database size, uploads folder size, disk usage
+    - **Recent posts** — a summary of the latest published content
+
+    Use the dashboard as your daily starting point to spot anything that needs attention before diving into individual features.
+  </Step>
+
+  <Step title="Run your first plugin update check">
+    Navigate to **Plugin Manager** in the sidebar. Click **Check Updates** in the top-right corner. WP Manager Pro forces WordPress to re-query WordPress.org for fresh update data and immediately refreshes the plugin list — no page reload needed.
+
+    Plugins with available updates show an update badge. Click the update button on any plugin row to update it to the latest version.
+
+    <Tip>
+      Use the **Version History** dialog (clock icon on any plugin row) to browse and install any specific version from WordPress.org — useful for rolling back after a bad update.
+    </Tip>
+  </Step>
+
+  <Step title="Enable maintenance mode">
+    Navigate to **Maintenance** in the sidebar. You will see three tabs:
+
+    - **Content** — set the page title and message visitors will see
+    - **Appearance** — choose a gradient preset (Midnight, Sunset, Forest, Royal, Slate, or Candy), pick an emoji icon, and adjust colors
+    - **Extras** — add a countdown timer to a specified date and time
+
+    The live preview pane on the right updates in real time as you adjust settings. When you are satisfied with the design, click **Enable Maintenance** to go live. To save your design without activating maintenance mode, click **Save Settings** instead.
+
+    To take the site out of maintenance mode, return to this page and click **Disable Maintenance**. The maintenance page is also removed automatically when you deactivate the plugin.
+
+    For a deeper dive, see [Maintenance mode](/features/maintenance-mode).
+  </Step>
+
+  <Step title="Set up admin URL protection">
+    Hiding the default WordPress login URL is one of the highest-impact security steps you can take. Navigate to **Security** in the sidebar, then open the **Login** tab.
+
+    Under **Admin URL Protection**, enter a secret slug — for example, `my-secret-login`. Click the clipboard button to copy the new login URL before saving, then click **Enable Protection**.
+
+    Your login page now lives at `yoursite.com/my-secret-login`. Direct GET requests to `wp-login.php` are redirected to the homepage. Password-reset and POST flows are unaffected.
+
+    <Tip>
+      While you are on the **Login** tab, consider also enabling the **Login Attempt Limiter** to automatically lock out IPs that exceed your configured maximum attempts.
+    </Tip>
+
+    For the full security feature set — IP blocklist, two-factor authentication, and core file integrity checks — see [Security overview](/features/security-overview).
+  </Step>
+</Steps>

@@ -1,0 +1,55 @@
+---
+title: "Settings API"
+description: "Get and save plugin branding settings including the plugin name, admin menu label, and logo URL."
+---
+
+<Note>All settings endpoints are available since v1.8.0.</Note>
+
+## GET /settings
+
+Returns the current plugin branding settings.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/settings \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="plugin_name" type="string">Custom plugin name shown in the admin interface. Empty string if not set (falls back to the default name).</ResponseField>
+<ResponseField name="menu_label" type="string">Custom admin menu label. Empty string if not set.</ResponseField>
+<ResponseField name="logo_url" type="string">URL of a custom logo image. Empty string if not set.</ResponseField>
+
+---
+
+## POST /settings
+
+Saves plugin branding settings. All fields are optional — omit any field to leave its current value unchanged.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/settings \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"plugin_name": "Site Manager", "menu_label": "Manager", "logo_url": "https://example.com/logo.png"}'
+```
+
+### Parameters
+
+<ParamField path="plugin_name" type="string">
+  Custom display name for the plugin in the WordPress admin.
+</ParamField>
+
+<ParamField path="menu_label" type="string">
+  Custom label for the plugin's top-level admin menu item.
+</ParamField>
+
+<ParamField path="logo_url" type="string">
+  URL of a custom logo image to display in the plugin header.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="plugin_name" type="string">The saved plugin name.</ResponseField>
+<ResponseField name="menu_label" type="string">The saved menu label.</ResponseField>
+<ResponseField name="logo_url" type="string">The saved logo URL.</ResponseField>

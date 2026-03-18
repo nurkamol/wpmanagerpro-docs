@@ -1,0 +1,183 @@
+---
+title: "Backup API"
+description: "Create and manage database backups, download SQL dumps, and configure scheduled automatic backups."
+---
+
+<Note>Manual backup endpoints are available since v1.4.0. Scheduled backup endpoints (`/backup/schedule`) are available since v1.8.0.</Note>
+
+## GET /backup
+
+Returns a list of all backup files stored in `wp-content/wmp-backups/`, sorted newest first.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/backup \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="backups" type="array">
+  <Expandable title="backup properties">
+    <ResponseField name="name" type="string">Backup filename (e.g. `backup-2026-03-15-143000.sql`).</ResponseField>
+    <ResponseField name="size" type="integer">File size in bytes.</ResponseField>
+    <ResponseField name="size_human" type="string">Human-readable file size.</ResponseField>
+    <ResponseField name="created_at" type="string">File modification timestamp in `Y-m-d H:i:s` format.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## POST /backup/create
+
+Creates a new SQL database backup and saves it to `wp-content/wmp-backups/`. All tables are included by default.
+
+<Note>
+  The backup directory is protected from direct web access via a `.htaccess` deny rule and an `index.php` silence file that are written automatically when the directory is created.
+</Note>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/backup/create \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="tables" type="array">
+  Specific table names to include in the backup. Defaults to all tables in the database.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true`.</ResponseField>
+<ResponseField name="name" type="string">Filename of the created backup.</ResponseField>
+<ResponseField name="size" type="integer">File size in bytes.</ResponseField>
+<ResponseField name="size_human" type="string">Human-readable file size.</ResponseField>
+<ResponseField name="created_at" type="string">Creation timestamp.</ResponseField>
+
+---
+
+## POST /backup/download
+
+Prepares a backup file for download by generating a one-time signed download URL valid for 120 seconds.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/backup/download \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "backup-2026-03-15-143000.sql"}'
+```
+
+### Parameters
+
+<ParamField path="name" type="string" required>
+  The exact filename of the backup to prepare. Must match the pattern `backup-YYYY-MM-DD-HHmmss.sql`.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true`.</ResponseField>
+<ResponseField name="download_url" type="string">Signed URL to stream the backup file. Expires after 120 seconds.</ResponseField>
+
+---
+
+## GET /backup/serve
+
+Streams a backup file as a download. Use the URL returned by `POST /backup/download` — it includes the required `key` parameter.
+
+<Note>
+  The response is an SQL file download (`Content-Type: application/sql`), not JSON. Use the `download_url` from `POST /backup/download` directly.
+</Note>
+
+```bash
+curl -o backup.sql "https://example.com/wp-json/wp-manager-pro/v1/backup/serve?key=KEY&_wpnonce=NONCE"
+```
+
+### Parameters
+
+<ParamField path="key" type="string" required>
+  The one-time download key returned by `POST /backup/download`.
+</ParamField>
+
+---
+
+## DELETE /backup/delete
+
+Permanently deletes a backup file from disk.
+
+<Warning>
+  Deleted backups cannot be recovered. Ensure you have downloaded or verified the backup before deleting.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/backup/delete \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "backup-2026-03-15-143000.sql"}'
+```
+
+### Parameters
+
+<ParamField path="name" type="string" required>
+  The exact filename of the backup to delete. Must match the pattern `backup-YYYY-MM-DD-HHmmss.sql`.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /backup/schedule
+
+<Note>Available since v1.8.0</Note>
+
+Returns the current scheduled backup configuration.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/backup/schedule \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="enabled" type="boolean">Whether automatic scheduled backups are active.</ResponseField>
+<ResponseField name="frequency" type="string">Schedule frequency: `daily`, `weekly`, or `monthly`.</ResponseField>
+<ResponseField name="retain" type="integer">Number of backup files to keep. Older files are pruned automatically.</ResponseField>
+<ResponseField name="next_run" type="string | null">Timestamp of the next scheduled run in `Y-m-d H:i:s` format, or `null` if scheduling is disabled.</ResponseField>
+
+---
+
+## POST /backup/schedule
+
+<Note>Available since v1.8.0</Note>
+
+Saves scheduled backup settings and registers or clears the WordPress cron event.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/backup/schedule \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true, "frequency": "daily", "retain": 7}'
+```
+
+### Parameters
+
+<ParamField path="enabled" type="boolean" required>
+  Enable or disable scheduled backups.
+</ParamField>
+
+<ParamField path="frequency" type="string">
+  How often to run backups: `daily`, `weekly`, or `monthly`. Defaults to `daily`.
+</ParamField>
+
+<ParamField path="retain" type="integer">
+  Number of backup files to keep. Older files beyond this limit are deleted after each backup run. Defaults to `5`.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true`.</ResponseField>
+<ResponseField name="enabled" type="boolean">The new enabled state.</ResponseField>
+<ResponseField name="frequency" type="string">The saved frequency.</ResponseField>
+<ResponseField name="retain" type="integer">The saved retain count.</ResponseField>
+<ResponseField name="next_run" type="string | null">Timestamp of the next scheduled run, or `null` if disabled.</ResponseField>

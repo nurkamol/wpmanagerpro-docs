@@ -1,0 +1,399 @@
+---
+title: "Security API"
+description: "Manage admin URL protection, login rate limiting, IP blocklist, site hardening, core file integrity checks, and two-factor authentication."
+---
+
+<Note>Admin URL protection is available since v1.3.0. All other security features are available since v2.0.0.</Note>
+
+## GET /security
+
+Returns the current admin URL protection status.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/security \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="enabled" type="boolean">Whether custom admin URL protection is active.</ResponseField>
+<ResponseField name="slug" type="string">The configured custom login slug. Empty string if not set.</ResponseField>
+<ResponseField name="custom_url" type="string">The full custom login URL. Empty string if protection is disabled.</ResponseField>
+<ResponseField name="login_url" type="string">The standard WordPress login URL.</ResponseField>
+
+---
+
+## GET /security/overview
+
+Returns all security feature states in a single call.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/security/overview \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="admin_url_enabled" type="boolean">Whether custom admin URL protection is active.</ResponseField>
+<ResponseField name="admin_url_slug" type="string">The configured custom login slug.</ResponseField>
+<ResponseField name="custom_url" type="string">The full custom login URL.</ResponseField>
+<ResponseField name="login_url" type="string">The standard WordPress login URL.</ResponseField>
+<ResponseField name="limiter_enabled" type="boolean">Whether login attempt limiting is active.</ResponseField>
+<ResponseField name="limiter_threshold" type="integer">Number of failed attempts before a lockout is triggered.</ResponseField>
+<ResponseField name="limiter_window" type="integer">Time window in seconds in which failed attempts are counted.</ResponseField>
+<ResponseField name="limiter_duration" type="integer">Lockout duration in seconds.</ResponseField>
+<ResponseField name="lockout_count" type="integer">Number of currently recorded lockout log entries.</ResponseField>
+<ResponseField name="ip_blocklist_count" type="integer">Number of IPs in the blocklist.</ResponseField>
+<ResponseField name="xmlrpc_disabled" type="boolean">Whether XML-RPC is disabled.</ResponseField>
+<ResponseField name="hide_wp_version" type="boolean">Whether the WordPress version is hidden from public output.</ResponseField>
+<ResponseField name="tfa_enabled" type="boolean">Whether 2FA is active for the currently authenticated user.</ResponseField>
+<ResponseField name="wp_version" type="string">Current WordPress version.</ResponseField>
+<ResponseField name="wp_locale" type="string">Current WordPress locale.</ResponseField>
+
+---
+
+## POST /security/admin-url
+
+Enables or updates the custom login slug. Direct access to `wp-login.php` is blocked once a slug is configured.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/security/admin-url \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "my-secret-login"}'
+```
+
+### Parameters
+
+<ParamField path="slug" type="string" required>
+  The custom login URL slug. Must be at least 4 characters and must not be a reserved slug such as `wp-admin`, `wp-login`, `admin`, or `login`.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="slug" type="string">The saved slug.</ResponseField>
+<ResponseField name="custom_url" type="string">The resulting full custom login URL.</ResponseField>
+
+---
+
+## DELETE /security/admin-url
+
+Disables custom admin URL protection and restores access to the default `wp-login.php`.
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/security/admin-url \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## POST /security/limiter
+
+Saves login attempt limiter settings.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/security/limiter \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"enabled": true, "threshold": 5, "window": 300, "duration": 900}'
+```
+
+### Parameters
+
+<ParamField path="enabled" type="boolean" required>
+  Enable or disable the login attempt limiter.
+</ParamField>
+
+<ParamField path="threshold" type="integer">
+  Number of failed attempts before an IP is locked out. Defaults to `5`.
+</ParamField>
+
+<ParamField path="window" type="integer">
+  Time window in seconds during which failed attempts are counted. Defaults to `300`.
+</ParamField>
+
+<ParamField path="duration" type="integer">
+  Lockout duration in seconds. Defaults to `900` (15 minutes).
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /security/lockouts
+
+Returns the lockout log, sorted newest first.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/security/lockouts \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="items" type="array">
+  <Expandable title="item properties">
+    <ResponseField name="ip" type="string">The locked-out IP address.</ResponseField>
+    <ResponseField name="username" type="string">The username used in the failed login attempt.</ResponseField>
+    <ResponseField name="time" type="integer">Unix timestamp when the lockout was triggered.</ResponseField>
+    <ResponseField name="duration" type="integer">Lockout duration in seconds.</ResponseField>
+    <ResponseField name="attempts" type="integer">Number of failed attempts that triggered the lockout.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## DELETE /security/lockouts
+
+Clears all lockout log entries.
+
+<Warning>
+  This clears the entire lockout log. Previously locked-out IPs will be able to attempt logins again immediately.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/security/lockouts \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## POST /security/lockouts/unlock
+
+Unlocks a specific IP address, clearing its lockout transient and removing it from the lockout log.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/security/lockouts/unlock \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"ip": "203.0.113.45"}'
+```
+
+### Parameters
+
+<ParamField path="ip" type="string" required>
+  The IP address to unlock.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## GET /security/ip-blocklist
+
+Returns all IPs and CIDR ranges currently in the blocklist.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/security/ip-blocklist \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="items" type="array">
+  <Expandable title="item properties">
+    <ResponseField name="ip" type="string">The blocked IP address or CIDR range.</ResponseField>
+    <ResponseField name="note" type="string">Optional note describing why the IP was blocked.</ResponseField>
+    <ResponseField name="added" type="integer">Unix timestamp when the entry was added.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## POST /security/ip-blocklist
+
+Adds an IP address or CIDR range to the blocklist. Blocked IPs receive a `403` response on all requests.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/security/ip-blocklist \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"ip": "203.0.113.0/24", "note": "spam source"}'
+```
+
+### Parameters
+
+<ParamField path="ip" type="string" required>
+  A valid IPv4 or IPv6 address, or a CIDR range (e.g. `203.0.113.0/24`).
+</ParamField>
+
+<ParamField path="note" type="string">
+  Optional description for why this IP is blocked.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## DELETE /security/ip-blocklist
+
+Removes an IP address or CIDR range from the blocklist.
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/security/ip-blocklist \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"ip": "203.0.113.0/24"}'
+```
+
+### Parameters
+
+<ParamField path="ip" type="string" required>
+  The IP address or CIDR range to remove.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## POST /security/hardening
+
+Saves XML-RPC and WordPress version visibility settings.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/security/hardening \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"disable_xmlrpc": true, "hide_wp_version": true}'
+```
+
+### Parameters
+
+<ParamField path="disable_xmlrpc" type="boolean">
+  Disable XML-RPC entirely by returning a `403` response to all XML-RPC requests.
+</ParamField>
+
+<ParamField path="hide_wp_version" type="boolean">
+  Remove the WordPress version from the generator meta tag and RSS feed.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+
+---
+
+## POST /security/integrity
+
+Runs a WordPress core file integrity check by comparing MD5 hashes against the official checksums from `api.wordpress.org`. Only `wp-admin` and `wp-includes` are scanned — `wp-content` is excluded.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/security/integrity \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="version" type="string">The WordPress version used for the checksum lookup.</ResponseField>
+<ResponseField name="locale" type="string">The WordPress locale used for the checksum lookup.</ResponseField>
+<ResponseField name="checked" type="integer">Total number of files checked.</ResponseField>
+<ResponseField name="ok" type="integer">Number of files that passed the check.</ResponseField>
+<ResponseField name="clean" type="boolean">`true` if no modified or missing files were found.</ResponseField>
+<ResponseField name="modified" type="array">
+  <Expandable title="item properties">
+    <ResponseField name="path" type="string">Relative file path.</ResponseField>
+    <ResponseField name="expected" type="string">Expected MD5 hash from WordPress.org.</ResponseField>
+    <ResponseField name="actual" type="string">Actual MD5 hash on disk.</ResponseField>
+    <ResponseField name="size" type="integer">File size in bytes.</ResponseField>
+    <ResponseField name="modified" type="integer">Unix timestamp of the last modification.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="missing" type="array">Relative paths of core files that are absent from disk.</ResponseField>
+
+---
+
+## GET /security/2fa
+
+Returns the two-factor authentication (TOTP) status for the currently authenticated user.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/security/2fa \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="enabled" type="boolean">Whether 2FA is active for this user.</ResponseField>
+<ResponseField name="has_secret" type="boolean">Whether a TOTP secret is stored for this user.</ResponseField>
+<ResponseField name="backup_count" type="integer">Number of remaining backup codes.</ResponseField>
+
+---
+
+## POST /security/2fa/setup
+
+Generates a new TOTP secret and returns the `otpauth://` URI and a QR code URL. The secret is saved as pending until verified via `POST /security/2fa/verify`.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/security/2fa/setup \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="secret" type="string">The Base32-encoded TOTP secret. Display this to the user for manual entry into an authenticator app.</ResponseField>
+<ResponseField name="otp_url" type="string">The `otpauth://totp/...` URI that encodes the secret, issuer, and account.</ResponseField>
+<ResponseField name="qr_url" type="string">URL of a QR code image encoding the `otp_url`. Scan with an authenticator app.</ResponseField>
+
+---
+
+## POST /security/2fa/verify
+
+Verifies a TOTP code from the authenticator app. On success, the pending secret is activated and a set of one-time backup codes is returned.
+
+<Note>
+  Backup codes are shown only once. Store them securely — they cannot be retrieved later.
+</Note>
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/security/2fa/verify \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"code": "123456"}'
+```
+
+### Parameters
+
+<ParamField path="code" type="string" required>
+  The 6-digit TOTP code from the authenticator app.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="backup_codes" type="array">Array of 8 one-time backup codes shown only on this response.</ResponseField>
+
+---
+
+## DELETE /security/2fa
+
+Disables two-factor authentication for the currently authenticated user and removes all stored secrets and backup codes.
+
+<Warning>
+  This immediately disables 2FA. The user will no longer be prompted for a code on login.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/security/2fa \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>

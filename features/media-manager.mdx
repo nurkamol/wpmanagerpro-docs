@@ -1,0 +1,81 @@
+---
+title: "Media Manager"
+description: "Clean up your WordPress media library by finding and removing orphaned files, unused attachments, and duplicates — plus in-place JPEG and PNG compression."
+---
+
+**Media Manager** helps you reclaim disk space and keep your media library tidy. It is organised into five tabs: **Overview**, **Orphaned**, **Unused**, **Duplicates**, and **Compress**.
+
+<Tip>
+  Always start with the **Overview** tab to get a count of issues before switching to the individual cleanup tabs. The counts update after each bulk delete action.
+</Tip>
+
+## Overview tab
+
+The **Overview** tab shows five summary cards:
+
+| Card | Description |
+|------|-------------|
+| **Total Attachments** | The number of attachment posts in the WordPress database. |
+| **Uploads Size** | The total size of all files in the uploads directory. |
+| **Orphaned** | Attachments whose physical file is missing from disk. |
+| **Unused** | Attachments not referenced in post content and not set as featured images. |
+| **Duplicate Groups** | Sets of files that share the same MD5 hash. |
+
+A **Refresh** button re-runs all counts. Below the cards, a **What Each Section Does** guide explains each cleanup type.
+
+## Orphaned tab
+
+An orphaned attachment has a record in the database but its physical file no longer exists on disk — for example, after a failed migration or manual file deletion.
+
+The **Orphaned** tab scans for these attachments and lists them with their title, MIME type, upload date, and attachment ID. Select one or more rows using the checkboxes (or the header checkbox to select all) and click **Delete selected** to permanently remove the attachment records via `wp_delete_attachment`.
+
+<Warning>
+  Deleting an orphaned attachment removes the database record and any associated metadata. It cannot be undone.
+</Warning>
+
+## Unused tab
+
+An unused attachment is one that:
+- is not set as the featured image for any post, and
+- has no filename reference in any published post's content.
+
+The **Unused** tab lists these attachments with thumbnail previews, file sizes, MIME types, and upload dates. When you select rows, the header shows how many megabytes would be freed. Select and click **Delete selected** to remove them via `wp_delete_attachment`.
+
+<Note>
+  The unused scan is based on filename matching in post content. Attachments referenced via shortcodes, blocks, or custom fields that store only the attachment ID rather than the file URL may still appear as unused. Review the list carefully before deleting.
+</Note>
+
+## Duplicates tab
+
+The **Duplicates** tab groups attachments by MD5 hash. Each group shows:
+- The number of identical files.
+- The total wasted disk space for the group.
+- A partial MD5 hash for reference.
+- Each file's title, size, ID, and upload date with a thumbnail.
+
+The oldest attachment in each group (lowest ID) is kept as the **original** and marked with a **Keep** badge. Each other attachment in the group has a **Delete** button. Deleting a duplicate calls `wp_delete_attachment` on that specific attachment.
+
+<Tip>
+  Click **Scan** to refresh the duplicate groups after making deletions. The total wasted space figure updates to reflect your progress.
+</Tip>
+
+## Compress tab
+
+The **Compress** tab re-compresses existing JPEG and PNG attachments in place using WordPress's built-in `wp_get_image_editor`. This reduces file size without changing the image format.
+
+### Quality slider
+
+Adjust the **Quality** slider (range: 40–100, default: 82) before compressing. Lower values produce smaller files. The recommended range for JPEG is 75–85. PNG re-compression is always lossless regardless of the quality setting.
+
+### Compressing files
+
+The tab lists all JPEG and PNG attachments with their current size, a thumbnail, and a **Compress** button per row. Click **Compress** on a file to re-process it at the selected quality. After compression, the row shows:
+- **Original size** — size before compression.
+- **Result** — new size after compression.
+- **Saved** — bytes saved and percentage reduction.
+
+If no size reduction is achieved (the file was already compressed efficiently), the result shows "No reduction".
+
+<Note>
+  Compression is applied to the original attachment file on disk. The change is permanent. Consider backing up your uploads directory before running bulk compression for the first time.
+</Note>

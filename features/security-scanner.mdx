@@ -1,0 +1,186 @@
+---
+title: "Security scanner"
+description: "Proactive threat detection for your WordPress site — malware scanning, CVE vulnerability checks, SSL certificate monitoring, and core version status. Available since v2.7.0."
+---
+
+The **Security Scanner** is a dedicated page (accessible from the System group in the sidebar) that performs four categories of checks and aggregates the results into a single security score. It is separate from the main Security Suite.
+
+<Note>
+  The Security Scanner was introduced in WP Manager Pro **v2.7.0**.
+</Note>
+
+## Overview tab
+
+The **Overview** tab gives you an at-a-glance view of your site's security health.
+
+### Security score
+
+The animated score ring displays a value from 0 to 100 and a letter grade:
+
+| Score range | Grade |
+|---|---|
+| 100 | A+ |
+| 90–99 | A |
+| 80–89 | B |
+| 70–79 | C |
+| 50–69 | D |
+| 0–49 | F |
+
+The score starts at 100 and deductions are applied based on completed scan results:
+
+- Each **critical** malware finding: −20
+- Each **warning** malware finding: −5
+- Each **critical** CVE: −15 | **high**: −10 | **medium**: −5 | other: −2
+- No HTTPS or invalid SSL certificate: −20
+- SSL expiring within 14 days: −10 | within 30 days: −5
+- WordPress not up to date: −10
+- PHP at end-of-life: −15 | EOL within 90 days: −5
+
+The score only reflects scans that have been run. Scans that have not yet been triggered are excluded from the calculation.
+
+### Summary cards
+
+Four summary cards sit beside the score ring — one each for Malware, Vulnerabilities, SSL Certificate, and Core & PHP. Clicking an unrun card triggers that scan immediately. Once a scan completes, the card shows a green (clean) or red/amber (issues found) status.
+
+### Running all scans
+
+Click **Run All Scans** in the page header to trigger every check simultaneously. The button shows a spinner while any scan is in progress.
+
+## Malware scanner tab
+
+The malware scanner reads PHP, JS, and HTML files in the `plugins` and `themes` directories and checks them against 13 detection patterns.
+
+### Detection patterns
+
+| Pattern | Severity |
+|---|---|
+| `eval(base64_decode(…))` | Critical |
+| `eval(gzinflate/gzuncompress/gzdecode(…))` | Critical |
+| `eval(str_rot13(…))` | Critical |
+| `preg_replace` with `/e` modifier | Critical |
+| `assert()` with `$_POST`/`$_GET` input | Critical |
+| `system()`/`exec()`/`passthru()` with `$_POST`/`$_GET` input | Critical |
+| `shell_exec()` with `$_POST`/`$_GET` input | Critical |
+| Known webshell markers (`FilesMan`, `r57`, `c99`) | Critical |
+| `create_function()` — commonly abused | Warning |
+| Long base64-encoded string (>500 chars) | Warning |
+| Dynamic variable function call `$x($y)` with user input | Warning |
+| `document.write(unescape(…))` JS injection | Warning |
+| Long hex-encoded string in `eval` | Warning |
+
+### Scan limits and scope
+
+- Up to **8,000 files** are scanned per run. The scan stops when this limit is reached.
+- Files larger than **512 KB** are skipped automatically to avoid memory issues.
+- Use the **scope selector** to narrow the scan to all files, plugins only, or themes only.
+
+### Per-finding actions
+
+Each finding shows the file path, severity badge, line number, and a code snippet. Four actions are available:
+
+- **Inspect** — opens a modal showing ±40 lines of context around the flagged line, with the suspicious line highlighted.
+- **Quarantine** — moves the file to `wp-content/wmp-quarantine/` and appends a `.quarantined` extension so the file will not execute. An `.htaccess` is automatically written to deny direct HTTP access to the quarantine directory.
+- **Delete** — permanently deletes the file from disk. This action requires confirmation.
+- **Ignore** — adds the file path to the scanner's ignore list. Ignored files are skipped on all future scans.
+
+<Warning>
+  **Delete** is irreversible. Quarantine is the safer first step — you can review the file before deciding to delete it.
+</Warning>
+
+## Vulnerabilities tab
+
+The **Vulnerabilities** tab checks all installed plugins and themes against the [WPScan CVE database](https://wpscan.com).
+
+### WPScan API key
+
+A WPScan API key is required. The free tier allows **25 API requests per day**. Register at [wpscan.com/register](https://wpscan.com/register) to get a free key.
+
+Paste your key into the **WPScan API Key** card and click **Save**. The UI stores only the last 4 characters for display; the full key is never exposed in the interface.
+
+<Note>
+  Each plugin and theme counts as one API request. On a site with many plugins, the free tier of 25 requests per day may be exhausted in a single scan. Consider a paid WPScan plan for larger sites.
+</Note>
+
+### CVE results
+
+Click **Check Now** to run the vulnerability scan. Results are grouped by plugin or theme:
+
+- Items with no known CVEs show a green **Clean** badge.
+- Items with active vulnerabilities show a red badge with the CVE count.
+
+Expand any item to see individual CVE details:
+
+- **Title** — the vulnerability name
+- **Type** — vulnerability class (e.g. XSS, SQLI, LFI)
+- **CVSS score and severity** — numerical score and critical/high/medium/low label
+- **Fixed in** — the plugin/theme version in which the issue was patched (shown in green)
+- **References** — links to CVE entries on NVD and WPScan
+
+Only vulnerabilities that affect your **currently installed version** are shown. If your installed version is at or above the `fixed_in` version, the vulnerability is excluded from results.
+
+## SSL & Core tab
+
+### SSL certificate monitor
+
+The SSL monitor connects to your site's hostname on port 443 using PHP's `stream_socket_client` and parses the certificate with `openssl_x509_parse`. It reports:
+
+| Field | Description |
+|---|---|
+| Subject | The CN of the certificate subject |
+| Issuer | The certificate authority that issued the certificate |
+| SAN | Subject Alternative Names (additional hostnames covered) |
+| Valid from | Certificate start date |
+| Valid to | Certificate expiry date |
+| Days remaining | Days until expiry — green above 30, amber 14–30, red below 14 |
+
+If the site is not using HTTPS, the card reports "No SSL" and the score is deducted accordingly.
+
+### Core version check
+
+The core version check fetches the latest WordPress release from `https://api.wordpress.org/core/version-check/1.7/` and compares it against your installed version. If an update is available, the installed and latest versions are shown.
+
+### PHP EOL check
+
+The PHP EOL check compares your PHP version against a built-in end-of-life date table:
+
+| PHP version | EOL date |
+|---|---|
+| 5.6 | 2018-12-31 |
+| 7.0 | 2019-12-03 |
+| 7.1 | 2019-12-01 |
+| 7.2 | 2020-11-30 |
+| 7.3 | 2021-12-06 |
+| 7.4 | 2022-11-28 |
+| 8.0 | 2023-11-26 |
+| 8.1 | 2024-11-25 |
+| 8.2 | 2026-12-31 |
+| 8.3 | 2027-12-31 |
+| 8.4 | 2028-12-31 |
+
+Versions that have already passed their EOL date are flagged as **EOL** (red). Versions within 90 days of their EOL date are flagged as **EOL soon** (amber).
+
+## Running a full scan
+
+<Steps>
+  <Step title="Open the Security Scanner">
+    Click **Security Scanner** in the System section of the sidebar.
+  </Step>
+  <Step title="Configure the WPScan API key (first time only)">
+    Navigate to the **Vulnerabilities** tab, paste your WPScan API key into the **WPScan API Key** card, and click **Save**.
+  </Step>
+  <Step title="Click Run All Scans">
+    Return to the **Overview** tab and click **Run All Scans** in the page header. All four scans start simultaneously.
+  </Step>
+  <Step title="Review the security score and summary cards">
+    Once all scans complete, the score ring updates and each summary card shows a status. Click individual cards to jump to the corresponding tab.
+  </Step>
+  <Step title="Address any findings">
+    - For malware findings, use **Inspect**, **Quarantine**, or **Delete** on each finding.
+    - For CVE vulnerabilities, update the affected plugins and themes to the patched version.
+    - For SSL issues, renew or correctly install your certificate.
+    - For outdated WordPress or EOL PHP, update via your host's control panel or WP-CLI.
+  </Step>
+  <Step title="Re-run scans to confirm">
+    After addressing issues, click **Run All Scans** again to confirm the score improves.
+  </Step>
+</Steps>

@@ -1,0 +1,82 @@
+---
+title: "Code snippets"
+description: "Run custom PHP, CSS, and JavaScript on your site directly from the dashboard — no file editing required. Added in v1.4.0."
+---
+
+**Code Snippets** lets you inject custom PHP, CSS, and JavaScript into your site without editing theme files or `functions.php`. Snippets are stored in the `wp_wmp_snippets` database table and each has an independent enable/disable toggle.
+
+<Info>
+  Code Snippets was added in **v1.4.0**. The Monaco Editor was added in **v1.8.0**.
+</Info>
+
+<Warning>
+  PHP snippets are executed via `eval()` on every page load when enabled. Only enable code you trust completely.
+</Warning>
+
+## How snippets execute
+
+| Type | Hook | Effect |
+|------|------|--------|
+| **PHP** | `init` | Code runs on every front-end and admin page load |
+| **CSS** | `wp_head` | Styles are output in the `<head>` of every page |
+| **JavaScript** | `wp_footer` | Script is output before the closing `</body>` tag |
+
+## The snippet list
+
+All snippets are shown as cards in the main list. Each card shows:
+
+- An enable/disable **toggle switch** — flipping this activates or deactivates the snippet without deleting it.
+- The snippet **title** and type badge (**PHP**, **CSS**, or **JS**).
+- An **Active** badge when the snippet is currently enabled.
+- An optional **description**.
+- A preview of the code.
+- The last updated date.
+
+The edit (pencil) and delete (trash) icon buttons appear on each card.
+
+## Creating a PHP snippet
+
+<Steps>
+  <Step title="Open the New Snippet dialog">
+    Click **New Snippet** in the top-right corner of the Code Snippets page.
+  </Step>
+  <Step title="Enter a title">
+    Type a descriptive title in the **Title** field, e.g. `Disable comments on posts`.
+  </Step>
+  <Step title="Select PHP as the type">
+    In the **Type** dropdown, select **PHP**.
+  </Step>
+  <Step title="Write your code">
+    The **Monaco Editor** opens with PHP syntax highlighting. Write or paste your PHP code. Do not include an opening `<?php` tag — the plugin wraps your code automatically.
+
+    ```php
+    add_filter( 'comments_open', '__return_false', 20 );
+    add_filter( 'pings_open', '__return_false', 20 );
+    remove_post_type_support( 'post', 'comments' );
+    ```
+  </Step>
+  <Step title="Add an optional description">
+    The **Description** field is optional but helps document what the snippet does.
+  </Step>
+  <Step title="Click Create Snippet">
+    Click **Create Snippet**. The snippet is saved and appears in the list in a disabled state.
+  </Step>
+  <Step title="Enable the snippet">
+    Flip the toggle switch on the snippet card to activate it. The **Active** badge appears and the code begins running immediately on the next page load.
+  </Step>
+</Steps>
+
+## The Monaco Editor
+
+The code editor is powered by the **Monaco Editor** — the same engine used by VS Code. It provides:
+
+- Syntax highlighting for PHP, CSS, and JavaScript
+- Line numbers
+- Word wrap
+- Automatic layout
+
+The editor automatically switches syntax highlighting when you change the **Type** dropdown.
+
+## Disabling vs. deleting
+
+Flipping the toggle to off disables a snippet without deleting it. Disabled snippets remain in the database and can be re-enabled at any time. Use the delete (trash) icon only when you want to permanently remove a snippet.

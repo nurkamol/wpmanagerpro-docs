@@ -1,0 +1,289 @@
+---
+title: "Media API"
+description: "Analyse and clean up the media library — find orphaned, unused, and duplicate files, and re-compress JPEG and PNG attachments."
+---
+
+<Note>All media endpoints are available since v2.2.0.</Note>
+
+## GET /media/overview
+
+Returns aggregate statistics for the media library.
+
+```bash
+curl -X GET https://example.com/wp-json/wp-manager-pro/v1/media/overview \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Response
+
+<ResponseField name="total_attachments" type="integer">Total number of attachment posts in the database.</ResponseField>
+<ResponseField name="total_size" type="integer">Total size of the uploads directory in bytes.</ResponseField>
+<ResponseField name="total_size_human" type="string">Human-readable uploads directory size (e.g. `128 MB`).</ResponseField>
+<ResponseField name="orphaned_count" type="integer">Number of attachment records whose physical files are missing on disk (sampled from up to 200 attachments).</ResponseField>
+<ResponseField name="unused_count" type="integer">Number of attachments not referenced by any post content or as a featured image (sampled from up to 500 attachments).</ResponseField>
+<ResponseField name="duplicate_groups" type="integer">Number of groups of attachments that share the same MD5 hash (sampled from up to 300 attachments).</ResponseField>
+
+---
+
+## GET /media/orphaned
+
+Returns attachment records whose physical files are missing from the uploads directory.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/media/orphaned?limit=50&offset=0" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="limit" type="integer">
+  Maximum number of results to return. Defaults to `100`, maximum `200`.
+</ParamField>
+
+<ParamField path="offset" type="integer">
+  Number of results to skip for pagination. Defaults to `0`.
+</ParamField>
+
+### Response
+
+<ResponseField name="total" type="integer">Total number of orphaned attachments found.</ResponseField>
+<ResponseField name="items" type="array">
+  <Expandable title="item properties">
+    <ResponseField name="id" type="integer">Attachment post ID.</ResponseField>
+    <ResponseField name="title" type="string">Attachment title.</ResponseField>
+    <ResponseField name="mime_type" type="string">Attachment MIME type.</ResponseField>
+    <ResponseField name="date" type="string">Upload date.</ResponseField>
+    <ResponseField name="url" type="string">Attachment URL (GUID).</ResponseField>
+    <ResponseField name="file_path" type="string">Expected absolute file path on disk.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## DELETE /media/orphaned
+
+Permanently deletes one or more orphaned attachments from the database.
+
+<Warning>
+  Deleted attachment records cannot be recovered. Ensure you have a backup before bulk deleting.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/media/orphaned \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [42, 57, 103]}'
+```
+
+### Parameters
+
+<ParamField path="ids" type="array" required>
+  Array of attachment post IDs to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="deleted" type="integer">Number of attachments successfully deleted.</ResponseField>
+<ResponseField name="errors" type="array">IDs of attachments that could not be deleted.</ResponseField>
+
+---
+
+## GET /media/unused
+
+Returns attachments that are not attached to any parent post, not used as a featured image, and whose filename does not appear in any published post content.
+
+<Note>
+  Content scanning is approximate — it uses a `LIKE` search on `post_content`. Attachments embedded via shortcode or block attributes with obfuscated URLs may not be detected as in use.
+</Note>
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/media/unused?limit=50&offset=0" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="limit" type="integer">
+  Maximum results to return. Defaults to `50`, maximum `100`.
+</ParamField>
+
+<ParamField path="offset" type="integer">
+  Number of results to skip. Defaults to `0`.
+</ParamField>
+
+### Response
+
+<ResponseField name="total" type="integer">Total number of unused attachments found.</ResponseField>
+<ResponseField name="items" type="array">
+  <Expandable title="item properties">
+    <ResponseField name="id" type="integer">Attachment post ID.</ResponseField>
+    <ResponseField name="title" type="string">Attachment title.</ResponseField>
+    <ResponseField name="mime_type" type="string">MIME type.</ResponseField>
+    <ResponseField name="date" type="string">Upload date.</ResponseField>
+    <ResponseField name="url" type="string">Attachment URL.</ResponseField>
+    <ResponseField name="file_size" type="integer">File size in bytes.</ResponseField>
+    <ResponseField name="file_size_human" type="string">Human-readable file size.</ResponseField>
+    <ResponseField name="thumbnail" type="string">Thumbnail URL, or empty string if not available.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## DELETE /media/unused
+
+Permanently deletes one or more unused attachments.
+
+<Warning>
+  This permanently deletes the attachment records and their associated files. Verify the list before deleting.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/media/unused \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"ids": [88, 91]}'
+```
+
+### Parameters
+
+<ParamField path="ids" type="array" required>
+  Array of attachment IDs to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="deleted" type="integer">Number of attachments deleted.</ResponseField>
+<ResponseField name="errors" type="array">IDs of attachments that could not be deleted.</ResponseField>
+
+---
+
+## GET /media/duplicates
+
+Groups attachments that share the same file content (MD5 hash). Returns groups with two or more files, sorted by wasted disk space descending.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/media/duplicates?scan_limit=300" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="scan_limit" type="integer">
+  Maximum number of attachments to scan. Defaults to `300`, maximum `500`.
+</ParamField>
+
+### Response
+
+<ResponseField name="groups" type="array">
+  <Expandable title="group properties">
+    <ResponseField name="hash" type="string">MD5 hash of the file content shared by all items in the group.</ResponseField>
+    <ResponseField name="count" type="integer">Number of duplicate files in the group.</ResponseField>
+    <ResponseField name="wasted_size" type="integer">Bytes wasted by extra copies (total group size minus one copy).</ResponseField>
+    <ResponseField name="wasted_size_human" type="string">Human-readable wasted size.</ResponseField>
+    <ResponseField name="items" type="array">Array of attachment objects with `id`, `title`, `mime_type`, `date`, `url`, `file_path`, `file_size`, `file_size_human`, and `thumbnail` fields.</ResponseField>
+  </Expandable>
+</ResponseField>
+<ResponseField name="total_groups" type="integer">Total number of duplicate groups found.</ResponseField>
+<ResponseField name="total_wasted" type="integer">Total wasted bytes across all duplicate groups.</ResponseField>
+<ResponseField name="total_wasted_human" type="string">Human-readable total wasted size.</ResponseField>
+<ResponseField name="scanned" type="integer">Number of attachments scanned.</ResponseField>
+
+---
+
+## DELETE /media/duplicate
+
+Deletes a single duplicate attachment by ID.
+
+<Warning>
+  The attachment and its associated files are permanently deleted. Keep the attachment with the lowest ID (oldest) to preserve the original.
+</Warning>
+
+```bash
+curl -X DELETE https://example.com/wp-json/wp-manager-pro/v1/media/duplicate \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"id": 77}'
+```
+
+### Parameters
+
+<ParamField path="id" type="integer" required>
+  The attachment ID to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="deleted_id" type="integer">The ID of the deleted attachment.</ResponseField>
+
+---
+
+## GET /media/compress-candidates
+
+Returns JPEG and PNG attachments with their file sizes so you can identify large images that may benefit from re-compression.
+
+```bash
+curl -X GET "https://example.com/wp-json/wp-manager-pro/v1/media/compress-candidates?limit=50" \
+  -H "X-WP-Nonce: YOUR_NONCE"
+```
+
+### Parameters
+
+<ParamField path="limit" type="integer">
+  Maximum results to return. Defaults to `50`, maximum `200`.
+</ParamField>
+
+<ParamField path="offset" type="integer">
+  Number of results to skip for pagination. Defaults to `0`.
+</ParamField>
+
+### Response
+
+<ResponseField name="total" type="integer">Total number of JPEG and PNG attachments in the library.</ResponseField>
+<ResponseField name="items" type="array">
+  <Expandable title="item properties">
+    <ResponseField name="id" type="integer">Attachment ID.</ResponseField>
+    <ResponseField name="title" type="string">Attachment title.</ResponseField>
+    <ResponseField name="mime_type" type="string">`image/jpeg` or `image/png`.</ResponseField>
+    <ResponseField name="date" type="string">Upload date.</ResponseField>
+    <ResponseField name="url" type="string">Attachment URL.</ResponseField>
+    <ResponseField name="file_size" type="integer">File size in bytes.</ResponseField>
+    <ResponseField name="file_size_human" type="string">Human-readable file size.</ResponseField>
+    <ResponseField name="thumbnail" type="string">Thumbnail URL.</ResponseField>
+  </Expandable>
+</ResponseField>
+
+---
+
+## POST /media/compress
+
+Re-compresses a single JPEG or PNG attachment using the WordPress image editor. The file is overwritten in place.
+
+```bash
+curl -X POST https://example.com/wp-json/wp-manager-pro/v1/media/compress \
+  -H "X-WP-Nonce: YOUR_NONCE" \
+  -H "Content-Type: application/json" \
+  -d '{"id": 42, "quality": 80}'
+```
+
+### Parameters
+
+<ParamField path="id" type="integer" required>
+  The attachment ID to compress.
+</ParamField>
+
+<ParamField path="quality" type="integer">
+  Compression quality from `1` to `100`. Defaults to `82`.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">Always `true` on success.</ResponseField>
+<ResponseField name="id" type="integer">The compressed attachment ID.</ResponseField>
+<ResponseField name="before_size" type="integer">File size in bytes before compression.</ResponseField>
+<ResponseField name="after_size" type="integer">File size in bytes after compression.</ResponseField>
+<ResponseField name="before_size_human" type="string">Human-readable size before.</ResponseField>
+<ResponseField name="after_size_human" type="string">Human-readable size after.</ResponseField>
+<ResponseField name="saved" type="integer">Bytes saved.</ResponseField>
+<ResponseField name="saved_human" type="string">Human-readable bytes saved.</ResponseField>
+<ResponseField name="saved_pct" type="number">Percentage of file size saved.</ResponseField>

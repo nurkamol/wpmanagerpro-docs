@@ -1,0 +1,46 @@
+---
+title: "Security overview"
+description: "A five-tab Security Suite that protects every major attack surface of your WordPress installation."
+---
+
+The **Security** page is a five-tab suite covering login protection, server hardening, core file integrity, and two-factor authentication. A separate **Security Scanner** page provides proactive threat detection with malware scanning, CVE lookups, SSL monitoring, and core version checks.
+
+## Status cards
+
+The **Overview** tab displays six status cards — one per feature. Each card shows an **On** (green) or **Off** badge so you can assess your security posture at a glance.
+
+| Feature | What the card shows when active |
+|---|---|
+| Admin URL | The custom login slug (e.g. `/my-secret-login`) |
+| Login Limiter | The configured max-attempts threshold |
+| IP Blocklist | Number of blocked IPs / CIDR ranges |
+| XML-RPC | "Disabled" |
+| Hide WP Version | "Version hidden" |
+| Two-Factor Auth | "TOTP active" |
+
+Below the cards, the tab shows your current WordPress version and locale with a link to the **Integrity** tab where you can verify core files.
+
+## Security Suite tabs
+
+<CardGroup cols={2}>
+  <Card title="Login security" icon="lock" href="/features/security-login">
+    Custom admin URL, login attempt limiter, and lockout log.
+  </Card>
+  <Card title="Security hardening" icon="shield-check" href="/features/security-hardening">
+    Disable XML-RPC, hide WordPress version, and manage the IP blocklist.
+  </Card>
+  <Card title="Core file integrity" icon="file-search" href="/features/security-integrity">
+    Compare every wp-admin and wp-includes file against official wordpress.org checksums.
+  </Card>
+  <Card title="Two-factor authentication" icon="smartphone" href="/features/security-2fa">
+    TOTP-based 2FA per admin account with QR code setup and backup codes.
+  </Card>
+</CardGroup>
+
+## Security Scanner
+
+The **Security Scanner** is a separate page (accessible from the System section of the sidebar) with four tabs of its own: Overview, Malware Scanner, Vulnerabilities, and SSL & Core.
+
+<Card title="Security scanner" icon="scan-line" href="/features/security-scanner">
+  Malware detection, CVE vulnerability checks, SSL certificate monitoring, and PHP/core version status — available since v2.7.0.
+</Card>

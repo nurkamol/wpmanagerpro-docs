@@ -1,0 +1,111 @@
+---
+title: "Theme Manager"
+description: "Browse, activate, update, roll back, and export WordPress themes, including direct search and install from WordPress.org."
+---
+
+The **Theme Manager** gives you full control over every theme on your site. It is organized into three tabs: **Installed**, **Search & Install**, and **Upload ZIP**.
+
+## Installed themes
+
+The **Installed** tab displays all themes as screenshot cards in a responsive grid. Each card shows:
+
+- The theme screenshot (16:9 aspect ratio)
+- Theme name, version, and author
+- A **Child of {parent}** badge for child themes
+- An **Active** badge (blue ring around the card) for the currently active theme
+- An **Update** badge (amber) when a newer version is available
+
+For each theme you can:
+
+- **Activate** — set the theme as the active theme for the site
+- **Update** — one-click update button for themes with available updates
+- **Version History** — install any older or newer version from WordPress.org
+- **Export as ZIP** — download the theme's files as a `.zip` archive
+- **Delete** — permanently remove an inactive theme
+
+You can filter the grid by typing in the **Search themes** field, which matches against the theme name and author.
+
+## Activating a theme
+
+<Steps>
+  <Step title="Find the theme">
+    Locate the theme card on the **Installed** tab.
+  </Step>
+  <Step title="Click Activate">
+    Click the **Activate** button on the card. The button shows a spinner while the change is applied.
+  </Step>
+  <Step title="Confirm activation">
+    The card gains a blue ring and the **Active** badge. The previously active theme loses its ring.
+  </Step>
+</Steps>
+
+<Warning>
+  You cannot delete the currently active theme. The delete button is hidden on the active theme card. Activate a different theme first, then delete the unwanted one.
+</Warning>
+
+## Installing a theme from WordPress.org
+
+<Steps>
+  <Step title="Open the Search & Install tab">
+    Click the **Search & Install** tab.
+  </Step>
+  <Step title="Enter a search term">
+    Type a theme name or keyword and press **Enter** or click **Search**. Up to 12 results are returned from the WordPress.org themes API with screenshot previews, ratings, and version numbers.
+  </Step>
+  <Step title="Install the theme">
+    Click **Install Theme** on the card. Once installed, the button changes to **Installed** (if up to date) or **Update** (if a newer version exists locally).
+  </Step>
+</Steps>
+
+<Tip>
+  Click **Check Updates** in the top-right corner of the Theme Manager to force WordPress to re-check for theme updates immediately.
+</Tip>
+
+## Rolling back a theme to an older version
+
+<Steps>
+  <Step title="Open version history">
+    Click the **History** icon on any installed theme card to open the **Version History** dialog. The dialog displays the currently installed version and the full version list from WordPress.org, sorted newest-first.
+  </Step>
+  <Step title="Select a version">
+    Click **Install** next to the target version. The currently installed version is marked **Installed** and disabled.
+  </Step>
+  <Step title="Confirm">
+    The selected version is downloaded and installed over the existing theme files. A success toast confirms the change.
+  </Step>
+</Steps>
+
+<Note>
+  Version history is only available for themes hosted on WordPress.org. Custom or premium themes uploaded via ZIP will show no version history.
+</Note>
+
+## Uploading a theme ZIP
+
+<Steps>
+  <Step title="Open the Upload ZIP tab">
+    Click the **Upload ZIP** tab.
+  </Step>
+  <Step title="Select a file">
+    Drag and drop a `.zip` file onto the drop zone or click to browse. Only a single file is accepted per upload (unlike the Plugin Manager, which supports multi-file queues).
+  </Step>
+  <Step title="(Optional) Enable overwrite">
+    Check **Overwrite if exists** to replace an already-installed theme's files.
+  </Step>
+  <Step title="Install">
+    Click **Upload & Install Theme**. A spinner shows while the file is uploaded and extracted.
+  </Step>
+</Steps>
+
+## Exporting a theme as ZIP
+
+<Steps>
+  <Step title="Find the theme">
+    Locate the theme card on the **Installed** tab.
+  </Step>
+  <Step title="Click the download icon">
+    Click the **Download** icon on the theme card.
+  </Step>
+  <Step title="Save the file">
+    The browser downloads a `.zip` file named `{theme-slug}-{version}.zip` containing the complete theme directory.
+  </Step>
+</Steps>
